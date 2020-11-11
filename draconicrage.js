@@ -12,7 +12,7 @@ const modifiers = [
         type: "untyped",
     },
 ];
-const imgPath = "systems/pf2e/icons/features/classes/dragon-instinct.jpg";
+const imgPath = "systems/pf2e/icons/spells/whirling-flames.jpg";
 (async () => {
     if((actor.data.data.customModifiers[modifiers[0].category] || []).some(customModifier => customModifier.name === modifiers[0].name)){
         if (token.data.effects.includes(imgPath)) {
