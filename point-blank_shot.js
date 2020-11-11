@@ -1,17 +1,20 @@
+const modifier = {
+    name: "Point Blank Shot",
+    category: "damage",
+    value: 2,
+    type: "circumstance",
+};
+const imgPath = "systems/pf2e/icons/features/classes/precision.jpg";
 (async () => {
-if (actor) {
-  if ((actor.data.data.customModifiers['damage'] || []).some(modifier => modifier.name === 'Point-Blank Shot')) {
-    await actor.removeCustomModifier('damage', 'Point-Blank Shot')
-    if (token.data.effects.includes("systems/pf2e/icons/features/classes/precision.jpg")) {
-      token.toggleEffect("systems/pf2e/icons/features/classes/precision.jpg")
+    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
+        if (token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
+        }
+        await actor.removeCustomModifier(modifier.category, modifier.name);
+    }else{
+        if (!token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
+        }
+        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
     }
-  } else {
-    await actor.addCustomModifier('damage', 'Point-Blank Shot', 2, 'circumstance');
-    if (!token.data.effects.includes("systems/pf2e/icons/features/classes/precision.jpg")) {
-      token.toggleEffect("systems/pf2e/icons/features/classes/precision.jpg")
-    }
-  }
-} else {
-  ui.notifications.warn("You must have an actor selected.");
-}
-})(); 
+})();

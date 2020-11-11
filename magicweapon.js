@@ -1,16 +1,27 @@
+const modifier = {
+    name: "Magic Weapon",
+    category: "attack",
+    value: 1,
+    type: "item",
+};
+const damageDice = {
+    selector: "damage",
+    name: "Magic Weapon",
+    diceNumber: 1,
+};
+const imgPath = "systems/pf2e/icons/spells/magic-weapon.jpg";
 (async () => {
-    if((actor.data.data.customModifiers['attack'] || []).some(modifier => modifier.name === 'Magic Weapon')){
-        if (token.data.effects.includes("systems/pf2e/icons/spells/magic-weapon.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/magic-weapon.jpg");
+    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
+        if (token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await actor.removeCustomModifier('attack', 'Magic Weapon');
-        await actor.removeDamageDice('damage', 'Magic Weapon');
+        await actor.removeCustomModifier(modifier.category, modifier.name);
+        await actor.removeDamageDice(damageDice.selector, damageDice.name);
     }else{
-        if (!token.data.effects.includes("systems/pf2e/icons/spells/magic-weapon.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/magic-weapon.jpg");
+        if (!token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await game.pf2e.rollItemMacro("koyU5tGy3PsitArc");
-        await actor.addCustomModifier('attack', 'Magic Weapon', 1, 'item');
-        await actor.addDamageDice({selector: 'damage', name: 'Magic Weapon', diceNumber: 1});
+        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
+        await actor.addDamageDice(damageDice);
     }
 })();

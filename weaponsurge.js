@@ -1,16 +1,27 @@
+const modifier = {
+    name: "Weapon Surge",
+    category: "attack",
+    value: 1,
+    type: "status",
+};
+const damageDice = {
+    selector: "damage",
+    name: "Weapon Surge",
+    diceNumber: 1,
+};
+const imgPath = "systems/pf2e/icons/spells/weapon-surge.jpg";
 (async () => {
-    if((actor.data.data.customModifiers['attack'] || []).some(modifier => modifier.name === 'Weapon Surge')){
-        if (token.data.effects.includes("systems/pf2e/icons/spells/weapon-surge.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/weapon-surge.jpg");
+    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
+        if (token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await actor.removeCustomModifier('attack', 'Weapon Surge');
-        await actor.removeDamageDice('damage', 'Weapon Surge');
+        await actor.removeCustomModifier(modifier.category, modifier.name);
+        await actor.removeDamageDice(damageDice.selector, damageDice.name);
     }else{
-        if (!token.data.effects.includes("systems/pf2e/icons/spells/weapon-surge.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/weapon-surge.jpg");
+        if (!token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await game.pf2e.rollItemMacro("JKEevE0vBjNtNREO");
-        await actor.addCustomModifier('attack', 'Weapon Surge', 1, 'status');
-        await actor.addDamageDice({selector: 'damage', name: 'Weapon Surge', diceNumber: 1});
+        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
+        await actor.addDamageDice(damageDice);
     }
 })();

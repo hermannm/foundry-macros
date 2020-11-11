@@ -1,24 +1,33 @@
+const weapon = "Bastard Sword";
+const effectToConsume = {
+    name: "Weapon Surge",
+    modifier: {
+        category: "attack",
+    },
+    damageDice: {
+        selector: "damage",
+    },
+    imgPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
+};
 (async () => {
-    let weapon = 'Bastard Sword';
-    let bonusdice = '';
     if(!event.shiftKey){
         if(!event.altKey){
-            await (actor.data.data.actions ?? []).filter(action => action.type === 'strike').find(strike => strike.name === weapon)?.damage(event, [bonusdice, 'two-handed']);
+            await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.damage(event, ["", "two-handed"]);
         }else{
-            await (actor.data.data.actions ?? []).filter(action => action.type === 'strike').find(strike => strike.name === weapon)?.critical(event, [bonusdice, 'two-handed']);
+            await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.critical(event, ["", "two-handed"]);
         }
     }else{
         if(!event.altKey){
-            await (actor.data.data.actions ?? []).filter(action => action.type === 'strike').find(strike => strike.name === weapon)?.damage(event, [bonusdice]);
+            await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.damage(event);
         }else{
-            await (actor.data.data.actions ?? []).filter(action => action.type === 'strike').find(strike => strike.name === weapon)?.critical(event, [bonusdice]);
+            await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.critical(event);
         }
     }
-    if((actor.data.data.customModifiers['attack'] || []).some(modifier => modifier.name === 'Weapon Surge')){
-        await actor.removeCustomModifier('attack', 'Weapon Surge');
-        if (token.data.effects.includes("systems/pf2e/icons/spells/weapon-surge.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/weapon-surge.jpg");
+    if((actor.data.data.customModifiers[effectToConsume.modifier.category] || []).some(customModifier => customModifier.name === effectToConsume.name)){
+        if (token.data.effects.includes(effectToConsume.imgPath)) {
+            await token.toggleEffect(effectToConsume.imgPath);
         }
-        await actor.removeDamageDice('damage', 'Weapon Surge');
+        await actor.removeCustomModifier(effectToConsume.modifier.category, effectToConsume.name);
+        await actor.removeDamageDice(effectToConsume.damageDice.selector, effectToConsume.name);
     }
 })();

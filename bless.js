@@ -1,13 +1,20 @@
+const modifier = {
+    name: "Bless",
+    category: "attack",
+    value: 1,
+    type: "status",
+};
+const imgPath = "systems/pf2e/icons/spells/bless.jpg";
 (async () => {
-    if((actor.data.data.customModifiers['attack'] || []).some(modifier => modifier.name === 'Bless')){
-        if (token.data.effects.includes("systems/pf2e/icons/spells/bless.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/bless.jpg");
+    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
+        if (token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await actor.removeCustomModifier('attack', 'Bless');
+        await actor.removeCustomModifier(modifier.category, modifier.name);
     }else{
-        if (!token.data.effects.includes("systems/pf2e/icons/spells/bless.jpg")) {
-            await token.toggleEffect("systems/pf2e/icons/spells/bless.jpg");
+        if (!token.data.effects.includes(imgPath)) {
+            await token.toggleEffect(imgPath);
         }
-        await actor.addCustomModifier('attack', 'Bless', 1, 'status');
+        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
     }
 })();
