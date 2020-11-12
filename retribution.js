@@ -1,20 +1,22 @@
-const modifier = {
+const effect = {
     name: "Retribution",
-    category: "damage",
-    value: 2,
-    type: "circumstance",
+    modifier: {
+        stat: "damage",
+        value: 2,
+        type: "circumstance",
+    },
+    iconPath: "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg",
 };
-const imgPath = "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg";
 (async () => {
-    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
-        if (token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+    if((actor.data.data.customModifiers[effect.modifier.stat] || []).some(customModifier => customModifier.name === effect.name)){
+        if (token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
-        await actor.removeCustomModifier(modifier.category, modifier.name);
+        await actor.removeCustomModifier(effect.modifier.stat, effect.modifier.name);
     }else{
-        if (!token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+        if (!token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
-        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
+        await actor.addCustomModifier(effect.modifier.stat, effect.name, effect.modifier.value, effect.modifier.type);
     }
 })();

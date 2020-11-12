@@ -1,27 +1,28 @@
-const modifier = {
+const effect = {
     name: "Weapon Surge",
-    category: "attack",
-    value: 1,
-    type: "status",
+    modifier: {
+        stat: "attack",
+        value: 1,
+        type: "status",
+    },
+    damageDice: {
+        selector: "damage",
+        diceNumber: 1,
+    },
+    iconPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
 };
-const damageDice = {
-    selector: "damage",
-    name: "Weapon Surge",
-    diceNumber: 1,
-};
-const imgPath = "systems/pf2e/icons/spells/weapon-surge.jpg";
 (async () => {
-    if((actor.data.data.customModifiers[modifier.category] || []).some(customModifier => customModifier.name === modifier.name)){
-        if (token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+    if((actor.data.data.customModifiers[effect.modifier.stat] || []).some(customModifier => customModifier.name === effect.name)){
+        if (token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
-        await actor.removeCustomModifier(modifier.category, modifier.name);
+        await actor.removeCustomModifier(effect.modifier.stat, effect.modifier.name);
         await actor.removeDamageDice(damageDice.selector, damageDice.name);
     }else{
-        if (!token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+        if (!token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
-        await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
-        await actor.addDamageDice(damageDice);
+        await actor.addCustomModifier(effect.modifier.stat, effect.name, effect.modifier.value, effect.modifier.type);
+        await actor.addDamageDice({ ...effect.damageDice, name: effect.name });
     }
 })();

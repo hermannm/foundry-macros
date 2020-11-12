@@ -2,9 +2,9 @@ const weapon = "Retribution Axe";
 const effectToConsume = {
     name: "Retribution",
     modifier: {
-        category: "damage",
+        stat: "damage",
     },
-    imgPath: "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg",
+    iconPath: "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg",
 };
 (async () => {
     if(!event.shiftKey){
@@ -12,10 +12,10 @@ const effectToConsume = {
     }else{
         await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.critical(event);
     }
-    if((actor.data.data.customModifiers[effectToConsume.modifier.category] || []).some(customModifier => customModifier.name === effectToConsume.name)){
-        if (token.data.effects.includes(effectToConsume.imgPath)) {
-            await token.toggleEffect(effectToConsume.imgPath);
+    if((actor.data.data.customModifiers[effectToConsume.modifier.stat] || []).some(customModifier => customModifier.name === effectToConsume.name)){
+        if (token.data.effects.includes(effectToConsume.iconPath)) {
+            await token.toggleEffect(effectToConsume.iconPath);
         }
-        await actor.removeCustomModifier(effectToConsume.modifier.category, effectToConsume.name);
+        await actor.removeCustomModifier(effectToConsume.modifier.stat, effectToConsume.name);
     }
 })();

@@ -2,12 +2,12 @@ const weapon = "Bastard Sword";
 const effectToConsume = {
     name: "Weapon Surge",
     modifier: {
-        category: "attack",
+        stat: "attack",
     },
     damageDice: {
         selector: "damage",
     },
-    imgPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
+    iconPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
 };
 (async () => {
     if(!event.shiftKey){
@@ -23,11 +23,11 @@ const effectToConsume = {
             await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.critical(event);
         }
     }
-    if((actor.data.data.customModifiers[effectToConsume.modifier.category] || []).some(customModifier => customModifier.name === effectToConsume.name)){
-        if (token.data.effects.includes(effectToConsume.imgPath)) {
-            await token.toggleEffect(effectToConsume.imgPath);
+    if((actor.data.data.customModifiers[effectToConsume.modifier.stat] || []).some(customModifier => customModifier.name === effectToConsume.name)){
+        if (token.data.effects.includes(effectToConsume.iconPath)) {
+            await token.toggleEffect(effectToConsume.iconPath);
         }
-        await actor.removeCustomModifier(effectToConsume.modifier.category, effectToConsume.name);
+        await actor.removeCustomModifier(effectToConsume.modifier.stat, effectToConsume.name);
         await actor.removeDamageDice(effectToConsume.damageDice.selector, effectToConsume.name);
     }
 })();
