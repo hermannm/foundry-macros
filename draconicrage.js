@@ -1,34 +1,36 @@
-const modifiers = [
-    {
-        name: "Rage",
-        category: "ac",
-        value: -1,
-        type: "untyped",
-    },
-    {
-        name: "Fire",
-        category: "damage",
-        value: 4,
-        type: "untyped",
-    },
-];
-const imgPath = "systems/pf2e/icons/spells/whirling-flames.jpg";
+const effect = {
+    name: "Rage",
+    modifiers: [
+        {
+            stat: "ac",
+            value: -1,
+            type: "untyped",
+        },
+        {
+            stat: "damage",
+            value: 4,
+            type: "untyped",
+            damageType: "fire",
+        },
+    ],
+    iconPath: "systems/pf2e/icons/spells/whirling-flames.jpg",
+};
 (async () => {
-    if((actor.data.data.customModifiers[modifiers[0].category] || []).some(customModifier => customModifier.name === modifiers[0].name)){
-        if (token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+    if((actor.data.data.customModifiers[effect.modifiers[0].stat] || []).some(customModifier => customModifier.name === effect.name)){
+        if (token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
-        for(let modifier of modifiers){
-            await actor.removeCustomModifier(modifier.category, modifier.name);
+        for(let modifier of effect.modifiers){
+            await actor.removeCustomModifier(modifier.stat, effect.name);
         }
         await actor.update({'data.attributes.hp.temp': 0});
     }else{
-        if (!token.data.effects.includes(imgPath)) {
-            await token.toggleEffect(imgPath);
+        if (!token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
         }
         game.pf2e.rollItemMacro("hHtq5EnPeeQ6tXzK");
-        for(let modifier of modifiers){
-            await actor.addCustomModifier(modifier.category, modifier.name, modifier.value, modifier.type);
+        for(let modifier of effect.modifiers){
+            await actor.addCustomModifier(...[modifier.stat, effect.name, modifier.value, modifier.type], ...(modifier.damageType ? [undefined, modifier.damageType] : []));
         }
         const tempHP = (actor.data.data.details.level.value + actor.data.data.abilities.con.mod);
         if (actor.data.data.attributes.hp.temp < tempHP) {
