@@ -10,10 +10,10 @@ const effect = {
             stat: "damage",
             value: 4,
             type: "untyped",
-            damageType: "fire",
+            damageType: "cold",
         },
     ],
-    iconPath: "systems/pf2e/icons/spells/whirling-flames.jpg",
+    iconPath: "systems/pf2e/icons/features/ancestry/darkvision.jpg",
 };
 (async () => {
     if((actor.data.data.customModifiers[effect.modifiers[0].stat] || []).some(customModifier => customModifier.name === effect.name)){
