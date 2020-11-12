@@ -16,7 +16,7 @@ const effect = {
         if (token.data.effects.includes(effect.iconPath)) {
             await token.toggleEffect(effect.iconPath);
         }
-        await actor.removeCustomModifier(effect.modifier.stat, effect.modifier.name);
+        await actor.removeCustomModifier(effect.modifier.stat, effect.name);
         await actor.removeDamageDice(damageDice.selector, damageDice.name);
     }else{
         if (!token.data.effects.includes(effect.iconPath)) {
