@@ -12,6 +12,11 @@ const { _id: itemID, data: { focus: { points: focusPoints, pool: focusPool } } }
     if(event.shiftKey){
         if(focusPoints < focusPool){
             actor.updateEmbeddedEntity("OwnedItem",  { _id: itemID, data: { focus: { points: focusPoints + 1, pool: focusPool } } });
+            await ChatMessage.create({
+                user: game.user._id,
+                speaker: ChatMessage.getSpeaker(),
+                content: actor.name + " Refocuses, restoring 1 Focus Point.",
+            });
         }else{
             ui.notifications.warn("Focus pool already full.");
         }
@@ -27,6 +32,14 @@ const { _id: itemID, data: { focus: { points: focusPoints, pool: focusPool } } }
             await token.toggleEffect(effect.iconPath);
         }
         await actor.addCustomModifier(effect.modifier.stat, effect.name, effect.modifier.value, effect.modifier.type);
+        DicePF2e.damageRoll({
+            event: event,
+            parts: ["" + (6 * Math.ceil(actor.data.data.details.level.value/2))],
+            actor: actor,
+            data: actor.data.data,
+            title: "Lay on Hands - Healing",
+            speaker: ChatMessage.getSpeaker(),
+        });
         actor.updateEmbeddedEntity("OwnedItem",  { _id: itemID, data: { focus: { points: focusPoints - 1, pool: focusPool } } });
     }
 })();
