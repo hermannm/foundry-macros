@@ -1,5 +1,5 @@
 const effect = {
-    name: "Point Blank Shot",
+    name: "Point-Blank Shot",
     modifier: {
         stat: "damage",
         value: 2,
@@ -14,6 +14,14 @@ const effect = {
         }
         await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     }else{
+        const itemID =
+            actor.items
+                .filter(item => item.data.type === "action")
+                .find(item => item.data.name === effect.name)?._id ??
+            actor.items.find(item => item.data.name === effect.name)?._id;
+        if(itemID){
+            game.pf2e.rollItemMacro(itemID);
+        }
         if (!token.data.effects.includes(effect.iconPath)) {
             await token.toggleEffect(effect.iconPath);
         }

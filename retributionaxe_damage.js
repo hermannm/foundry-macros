@@ -7,7 +7,7 @@ const effectToConsume = {
     iconPath: "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg",
 };
 (async () => {
-    if(!event.shiftKey){
+    if(!event.altKey){
         await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.damage(event);
     }else{
         await (actor.data.data.actions ?? []).filter(action => action.type === "strike").find(strike => strike.name === weapon)?.critical(event);

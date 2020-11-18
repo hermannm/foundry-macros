@@ -25,12 +25,22 @@ const effect = {
         }
         await actor.update({'data.attributes.hp.temp': 0});
     }else{
+        const itemID =
+            actor.items
+                .filter(item => item.data.type === "action")
+                .find(item => item.data.name === effect.name)?._id ??
+            actor.items.find(item => item.data.name === effect.name)?._id;
+        if(itemID){
+            game.pf2e.rollItemMacro(itemID);
+        }
         if (!token.data.effects.includes(effect.iconPath)) {
             await token.toggleEffect(effect.iconPath);
         }
-        game.pf2e.rollItemMacro("hHtq5EnPeeQ6tXzK");
         for(let modifier of effect.modifiers){
-            await actor.addCustomModifier(...[modifier.stat, effect.name, modifier.value, modifier.type], ...(modifier.damageType ? [undefined, modifier.damageType] : []));
+            await actor.addCustomModifier(
+                ...[modifier.stat, effect.name, modifier.value, modifier.type],
+                ...(modifier.damageType ? [undefined, modifier.damageType] : [])
+            );
         }
         const tempHP = (actor.data.data.details.level.value + actor.data.data.abilities.con.mod);
         if (actor.data.data.attributes.hp.temp < tempHP) {
