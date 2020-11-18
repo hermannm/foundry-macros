@@ -8,16 +8,16 @@ const effectToConsume = {
         "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/retribution-axe.jpg",
 };
 (async () => {
-    if (!event.altKey) {
-        await (actor.data.data.actions ?? [])
-            .filter((action) => action.type === "strike")
-            .find((strike) => strike.name === weapon)
-            ?.damage(event);
-    } else {
-        await (actor.data.data.actions ?? [])
+    if (event.altKey) {
+        (actor.data.data.actions ?? [])
             .filter((action) => action.type === "strike")
             .find((strike) => strike.name === weapon)
             ?.critical(event);
+    } else {
+        (actor.data.data.actions ?? [])
+            .filter((action) => action.type === "strike")
+            .find((strike) => strike.name === weapon)
+            ?.damage(event);
     }
     if (
         (

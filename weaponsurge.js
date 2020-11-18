@@ -16,18 +16,18 @@ const {
     data: {
         focus: { points: focusPoints, pool: focusPool },
     },
-} = await actor.data.items.find((item) => item.name === "Focus Spells");
+} = actor.data.items.find((item) => item.name === "Focus Spells");
 (async () => {
     if (event.shiftKey) {
         if (focusPoints < focusPool) {
-            await actor.updateEmbeddedEntity("OwnedItem", {
-                _id: focusID,
-                data: { focus: { points: focusPoints + 1, pool: focusPool } },
-            });
-            await ChatMessage.create({
+            ChatMessage.create({
                 user: game.user._id,
                 speaker: ChatMessage.getSpeaker(),
                 content: actor.name + " refocuses, restoring 1 Focus Point.",
+            });
+            await actor.updateEmbeddedEntity("OwnedItem", {
+                _id: focusID,
+                data: { focus: { points: focusPoints + 1, pool: focusPool } },
             });
         } else {
             ui.notifications.warn("Focus pool already full.");

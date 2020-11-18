@@ -12,24 +12,24 @@ const effectToConsume = {
 (async () => {
     if (!event.shiftKey) {
         if (!event.altKey) {
-            await (actor.data.data.actions ?? [])
+            (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
                 ?.damage(event, ["", "two-handed"]);
         } else {
-            await (actor.data.data.actions ?? [])
+            (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
                 ?.critical(event, ["", "two-handed"]);
         }
     } else {
         if (!event.altKey) {
-            await (actor.data.data.actions ?? [])
+            (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
                 ?.damage(event);
         } else {
-            await (actor.data.data.actions ?? [])
+            (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
                 ?.critical(event);
