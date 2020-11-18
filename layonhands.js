@@ -46,10 +46,7 @@ const {
                 .find((item) => item.data.name === effect.name)?._id ??
             actor.items.find((item) => item.data.name === effect.name)?._id;
         if (itemID) {
-            game.pf2e.rollItemMacro(itemID);
-        }
-        if (!token.data.effects.includes(effect.iconPath)) {
-            await token.toggleEffect(effect.iconPath);
+            await game.pf2e.rollItemMacro(itemID);
         }
         await DicePF2e.damageRoll({
             event: event,
@@ -61,6 +58,9 @@ const {
             title: "Lay on Hands - Healing",
             speaker: ChatMessage.getSpeaker(),
         });
+        if (!token.data.effects.includes(effect.iconPath)) {
+            await token.toggleEffect(effect.iconPath);
+        }
         await actor.addCustomModifier(
             effect.modifier.stat,
             effect.name,
