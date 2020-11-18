@@ -6,21 +6,23 @@ const effect = {
 (async () => {
     if (token.data.effects.includes(effect.iconPath)) {
         await token.toggleEffect(effect.iconPath);
-        await actor.update({"data.attributes.hp.temp": 0});
-    }else{
+        await actor.update({ "data.attributes.hp.temp": 0 });
+    } else {
         if (actor.data.data.attributes.hp.temp < effect.tempHP) {
             const itemID =
                 actor.items
-                    .filter(item => item.data.type === "action")
-                    .find(item => item.data.name === effect.name)?._id ??
-                actor.items.find(item => item.data.name === effect.name)?._id;
-            if(itemID){
+                    .filter((item) => item.data.type === "action")
+                    .find((item) => item.data.name === effect.name)?._id ??
+                actor.items.find((item) => item.data.name === effect.name)?._id;
+            if (itemID) {
                 game.pf2e.rollItemMacro(itemID);
             }
-            await actor.update({"data.attributes.hp.temp": effect.tempHP});
+            await actor.update({ "data.attributes.hp.temp": effect.tempHP });
             await token.toggleEffect(effect.iconPath);
-        }else{
-            ui.notifications.warn(`Previous temporary hit points exceed what you would gain from ${effect.name}.`);
+        } else {
+            ui.notifications.warn(
+                `Previous temporary hit points exceed what you would gain from ${effect.name}.`
+            );
         }
     }
 })();
