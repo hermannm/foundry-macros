@@ -14,7 +14,7 @@ const action = {
     const roll = await DicePF2e.d20Roll({
         event,
         parts: ["@mod"],
-        data: { mod: skill.value - skill.item },
+        data: { mod: skill.value },
         title: `
             <b>${action.name}: ${action.skill} vs. ${action.targetDC} DC</b>
             <div class="tags">
