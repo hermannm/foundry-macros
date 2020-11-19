@@ -51,40 +51,40 @@ const action = {
             } else if (dieResult === 1) {
                 successStep--;
             }
-            resultMessage += `<hr><div><b>${target.name}:</b></div>`;
+            resultMessage += `<hr><b>${target.name}:</b>`;
             if (successStep <= 0) {
                 resultMessage += `
-                    💔 <b>Critical Failure</b>
+                    <br />💔 <b>Critical Failure</b>
                     ${
                         action.degreesOfSuccess?.criticalFailure
-                            ? `<br>${action.degreesOfSuccess.criticalFailure}`
+                            ? `<br />${action.degreesOfSuccess.criticalFailure}`
                             : ""
                     }
                 `;
             } else if (successStep === 1) {
                 resultMessage += `
-                    ❌ <b>Failure</b>
+                    <br />❌ <b>Failure</b>
                     ${
                         action.degreesOfSuccess?.failure
-                            ? `<br>${action.degreesOfSuccess.failure}`
+                            ? `<br />${action.degreesOfSuccess.failure}`
                             : ""
                     }
                 `;
             } else if (successStep === 2) {
                 resultMessage += `
-                    ✔️ <b>Success</b>
+                    <br />✔️ <b>Success</b>
                     ${
                         action.degreesOfSuccess?.success
-                            ? `<br>${action.degreesOfSuccess.success}`
+                            ? `<br />${action.degreesOfSuccess.success}`
                             : ""
                     }
                 `;
             } else if (successStep >= 3) {
                 resultMessage += `
-                    💥 <b>Critical Success</b>
+                    <br />💥 <b>Critical Success</b>
                     ${
                         action.degreesOfSuccess?.criticalSuccess
-                            ? `<br>${action.degreesOfSuccess.criticalSuccess}`
+                            ? `<br />${action.degreesOfSuccess.criticalSuccess}`
                             : ""
                     }
                 `;
