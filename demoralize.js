@@ -34,61 +34,45 @@ const action = {
             target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
                 ?.value + 10;
         if (dc) {
-            let successStep;
-            if (roll.total >= dc) {
-                successStep = 2;
-            } else {
-                successStep = 1;
-            }
-            if (roll.total >= dc + 10) {
-                successStep++;
-            } else if (roll.total <= dc - 10) {
-                successStep--;
-            }
-            const dieResult = roll.terms[0].results[0].result;
-            if (dieResult === 20) {
-                successStep++;
-            } else if (dieResult === 1) {
-                successStep--;
-            }
-            resultMessage += `<hr /><b>${target.name}:</b>`;
-            if (successStep <= 0) {
-                resultMessage += `
-                    <br />💔 <b>Critical Failure</b>
-                    ${
-                        action.degreesOfSuccess?.criticalFailure
-                            ? `<br />${action.degreesOfSuccess.criticalFailure}`
-                            : ""
-                    }
-                `;
-            } else if (successStep === 1) {
-                resultMessage += `
-                    <br />❌ <b>Failure</b>
-                    ${
-                        action.degreesOfSuccess?.failure
-                            ? `<br />${action.degreesOfSuccess.failure}`
-                            : ""
-                    }
-                `;
-            } else if (successStep === 2) {
-                resultMessage += `
-                    <br />✔️ <b>Success</b>
-                    ${
-                        action.degreesOfSuccess?.success
-                            ? `<br />${action.degreesOfSuccess.success}`
-                            : ""
-                    }
-                `;
-            } else if (successStep >= 3) {
-                resultMessage += `
-                    <br />💥 <b>Critical Success</b>
-                    ${
-                        action.degreesOfSuccess?.criticalSuccess
-                            ? `<br />${action.degreesOfSuccess.criticalSuccess}`
-                            : ""
-                    }
-                `;
-            }
+            const result =
+                roll.total +
+                (roll.terms[0].results[0].result === 20
+                    ? 10
+                    : roll.terms[0].results[0].result === 1
+                    ? -10
+                    : 0);
+            resultMessage += `
+                <hr /><b>${target.name}:</b>
+                ${
+                    result >= dc
+                        ? result >= dc + 10
+                            ? `<br />💥 <b>Critical Success</b>
+                            ${
+                                action.degreesOfSuccess?.criticalSuccess
+                                    ? `<br />${action.degreesOfSuccess.criticalSuccess}`
+                                    : ""
+                            }`
+                            : `<br />✔️ <b>Success</b>
+                            ${
+                                action.degreesOfSuccess?.success
+                                    ? `<br />${action.degreesOfSuccess.success}`
+                                    : ""
+                            }`
+                        : result <= dc - 10
+                            ? `<br />💔 <b>Critical Failure</b>
+                                ${
+                                    action.degreesOfSuccess?.criticalFailure
+                                        ? `<br />${action.degreesOfSuccess.criticalFailure}`
+                                        : ""
+                                }`
+                            : `<br />❌ <b>Failure</b>
+                                ${
+                                    action.degreesOfSuccess?.failure
+                                        ? `<br />${action.degreesOfSuccess.failure}`
+                                        : ""
+                                }`
+                }
+            `;
         }
     });
     if (game.user.targets.size > 0) {
