@@ -28,7 +28,7 @@ const action = {
         `,
         speaker: ChatMessage.getSpeaker(),
     });
-    let resultMessage = "<hr><h3>Demoralize</h3>";
+    let resultMessage = "<hr /><h3>Demoralize</h3>";
     game.user.targets.forEach((target) => {
         const dc =
             target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
@@ -51,7 +51,7 @@ const action = {
             } else if (dieResult === 1) {
                 successStep--;
             }
-            resultMessage += `<hr><b>${target.name}:</b>`;
+            resultMessage += `<hr /><b>${target.name}:</b>`;
             if (successStep <= 0) {
                 resultMessage += `
                     <br />💔 <b>Critical Failure</b>
