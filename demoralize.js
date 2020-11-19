@@ -31,7 +31,7 @@ const action = {
     let resultMessage = "<hr><h3>Demoralize</h3>";
     game.user.targets.forEach((target) => {
         if (target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]) {
-            let successStep = -1;
+            let successStep;
             const dc =
                 target.actor.data.data.saves[action.targetDC.toLowerCase()]
                     .value + 10;
@@ -40,59 +40,53 @@ const action = {
             } else {
                 successStep = 1;
             }
-            if (roll.parts[0].rolls[0].result == 20) {
-                successStep++;
-            } else if (roll.parts[0].rolls[0].result == 1) {
-                successStep--;
-            } else if (roll.total >= dc + 10) {
+            if (roll.total >= dc + 10) {
                 successStep++;
             } else if (roll.total <= dc - 10) {
                 successStep--;
             }
+            if (roll.parts[0].rolls[0].result == 20) {
+                successStep++;
+            } else if (roll.parts[0].rolls[0].result == 1) {
+                successStep--;
+            }
             resultMessage += `<hr><div><b>${target.name}:</b></div>`;
-            switch (successStep) {
-                case 0:
-                    resultMessage += `
-                        💔 <b>Critical Failure</b>
-                        ${
-                            action.degreesOfSuccess?.criticalFailure
-                                ? `<br>${action.degreesOfSuccess.criticalFailure}`
-                                : ""
-                        }
-                    `;
-                    break;
-                case 1:
-                    resultMessage += `
-                        ❌ <b>Failure</b>
-                        ${
-                            action.degreesOfSuccess?.failure
-                                ? `<br>${action.degreesOfSuccess.failure}`
-                                : ""
-                        }
-                    `;
-                    break;
-                case 2:
-                    resultMessage += `
-                        ✔️ <b>Success</b>
-                        ${
-                            action.degreesOfSuccess?.success
-                                ? `<br>${action.degreesOfSuccess.success}`
-                                : ""
-                        }
-                    `;
-                    break;
-                case 3:
-                    resultMessage += `
-                        💥 <b>Critical Success</b>
-                        ${
-                            action.degreesOfSuccess?.criticalSuccess
-                                ? `<br>${action.degreesOfSuccess.criticalSuccess}`
-                                : ""
-                        }
-                    `;
-                    break;
-                default:
-                    resultMessage += "Error in calculating success.";
+            if (successStep <= 0) {
+                resultMessage += `
+                    💔 <b>Critical Failure</b>
+                    ${
+                        action.degreesOfSuccess?.criticalFailure
+                            ? `<br>${action.degreesOfSuccess.criticalFailure}`
+                            : ""
+                    }
+                `;
+            } else if (successStep === 1) {
+                resultMessage += `
+                    ❌ <b>Failure</b>
+                    ${
+                        action.degreesOfSuccess?.failure
+                            ? `<br>${action.degreesOfSuccess.failure}`
+                            : ""
+                    }
+                `;
+            } else if (successStep === 2) {
+                resultMessage += `
+                    ✔️ <b>Success</b>
+                    ${
+                        action.degreesOfSuccess?.success
+                            ? `<br>${action.degreesOfSuccess.success}`
+                            : ""
+                    }
+                `;
+            } else if (successStep >= 3) {
+                resultMessage += `
+                    💥 <b>Critical Success</b>
+                    ${
+                        action.degreesOfSuccess?.criticalSuccess
+                            ? `<br>${action.degreesOfSuccess.criticalSuccess}`
+                            : ""
+                    }
+                `;
             }
         }
     });
