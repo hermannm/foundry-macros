@@ -30,11 +30,11 @@ const action = {
     });
     let resultMessage = "<hr><h3>Demoralize</h3>";
     game.user.targets.forEach((target) => {
-        if (target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]) {
+        const dc =
+            target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
+                ?.value + 10;
+        if (dc) {
             let successStep;
-            const dc =
-                target.actor.data.data.saves[action.targetDC.toLowerCase()]
-                    .value + 10;
             if (roll.total >= dc) {
                 successStep = 2;
             } else {
@@ -45,9 +45,10 @@ const action = {
             } else if (roll.total <= dc - 10) {
                 successStep--;
             }
-            if (roll.parts[0].rolls[0].result == 20) {
+            const dieResult = roll.terms[0].results[0].result;
+            if (dieResult === 20) {
                 successStep++;
-            } else if (roll.parts[0].rolls[0].result == 1) {
+            } else if (dieResult === 1) {
                 successStep--;
             }
             resultMessage += `<hr><div><b>${target.name}:</b></div>`;
