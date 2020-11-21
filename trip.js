@@ -62,33 +62,25 @@ const action = {
                 }
                 resultMessage += `<hr /><b>${target.name}:</b>`;
                 if (successStep >= 3) {
-                    resultMessage += `<br />💥 <b>Critical Success</b>
-                        ${
-                            action.degreesOfSuccess?.criticalSuccess
-                                ? `<br />${action.degreesOfSuccess.criticalSuccess}`
-                                : ""
-                        }`;
+                    resultMessage += `<br />💥 <b>Critical Success</b>`;
+                    if (action.degreesOfSuccess?.criticalSuccess) {
+                        resultMessage += `<br />${action.degreesOfSuccess.criticalSuccess}`;
+                    }
                 } else if (successStep === 2) {
-                    resultMessage += `<br />✔️ <b>Success</b>
-                    ${
-                        action.degreesOfSuccess?.success
-                            ? `<br />${action.degreesOfSuccess.success}`
-                            : ""
-                    }`;
+                    resultMessage += `<br />✔️ <b>Success</b>`;
+                    if (action.degreesOfSuccess?.success) {
+                        resultMessage += `<br />${action.degreesOfSuccess.success}`;
+                    }
                 } else if (successStep === 1) {
-                    resultMessage += `<br />❌ <b>Failure</b>
-                        ${
-                            action.degreesOfSuccess?.failure
-                                ? `<br />${action.degreesOfSuccess.failure}`
-                                : ""
-                        }`;
+                    resultMessage += `<br />❌ <b>Failure</b>`;
+                    if (action.degreesOfSuccess?.failure) {
+                        resultMessage += `<br />${action.degreesOfSuccess.failure}`;
+                    }
                 } else if (successStep <= 0) {
-                    resultMessage += `<br />💔 <b>Critical Failure</b>
-                    ${
-                        action.degreesOfSuccess?.criticalFailure
-                            ? `<br />${action.degreesOfSuccess.criticalFailure}`
-                            : ""
-                    }`;
+                    resultMessage += `<br />💔 <b>Critical Failure</b>`;
+                    if (action.degreesOfSuccess?.criticalFailure) {
+                        resultMessage += `<br />${action.degreesOfSuccess.criticalFailure}`;
+                    }
                 }
             }
         }
