@@ -72,7 +72,7 @@ const action = {
                 `;
             }
         });
-        if (validTargets) {
+        if (validTarget) {
             ChatMessage.create({
                 user: game.user._id,
                 speaker: ChatMessage.getSpeaker(),
