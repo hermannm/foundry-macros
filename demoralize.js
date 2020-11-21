@@ -8,78 +8,76 @@ const action = {
     },
 };
 (async () => {
-    const skill = Object.values(actor.data.data.skills).find(
-        (skill) => skill.name === action.skill.toLowerCase()
+    const skillKey = Object.keys(actor.data.data.skills).find(
+        (key) => actor.data.data.skills[key].name === action.skill.toLowerCase()
     );
-    const roll = await DicePF2e.d20Roll({
-        event,
-        parts: ["@mod"],
-        data: { mod: skill.value },
-        title: `
-            <b>${action.name}: ${action.skill} vs. ${action.targetDC} DC</b>
-            <div class="tags">
-                ${skill.breakdown
-                    .split(", ")
-                    .map(
-                        (mod) => `<span class="tag tag_secondary">${mod}</span>`
-                    )
-                    .join("")}
-            </div>
-        `,
-        speaker: ChatMessage.getSpeaker(),
-    });
-    let resultMessage = "<hr /><h3>Demoralize</h3>";
-    game.user.targets.forEach((target) => {
-        const dc =
-            target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
-                ?.value + 10;
-        if (dc) {
-            const result =
-                roll.total +
-                (roll.terms[0].results[0].result === 20
-                    ? 10
-                    : roll.terms[0].results[0].result === 1
-                    ? -10
-                    : 0);
-            resultMessage += `
-                <hr /><b>${target.name}:</b>
-                ${
-                    result >= dc
-                        ? result >= dc + 10
+    const options = actor.getRollOptions([
+        "all",
+        "skill-check",
+        action.skill.toLowerCase(),
+    ]);
+    actor.data.data.skills[skillKey].roll(event, options, (roll) => {
+        let resultMessage = "<hr /><h3>Demoralize</h3>";
+        let validTarget = false;
+        game.user.targets.forEach((target) => {
+            const dc =
+                target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
+                    ?.value + 10;
+            if (dc) {
+                validTarget = true;
+                const successStep =
+                    (roll.total >= dc
+                        ? roll.total >= dc + 10
+                            ? 3
+                            : 2
+                        : roll.total > dc - 10
+                        ? 1
+                        : 0) +
+                    (roll.terms[0].results[0].result === 20
+                        ? 1
+                        : roll.terms[0].results[0].result === 1
+                        ? -1
+                        : 0);
+                resultMessage += `
+                    <hr /><b>${target.name}:</b>
+                    ${
+                        successStep >= 3
                             ? `<br />💥 <b>Critical Success</b>
                             ${
                                 action.degreesOfSuccess?.criticalSuccess
                                     ? `<br />${action.degreesOfSuccess.criticalSuccess}`
                                     : ""
                             }`
-                            : `<br />✔️ <b>Success</b>
+                            : successStep === 2
+                            ? `<br />✔️ <b>Success</b>
                             ${
                                 action.degreesOfSuccess?.success
                                     ? `<br />${action.degreesOfSuccess.success}`
                                     : ""
                             }`
-                        : result <= dc - 10
-                            ? `<br />💔 <b>Critical Failure</b>
+                            : successStep === 1
+                            ? `<br />❌ <b>Failure</b>
+                            ${
+                                action.degreesOfSuccess?.failure
+                                    ? `<br />${action.degreesOfSuccess.failure}`
+                                    : ""
+                            }`
+                            : `<br />💔 <b>Critical Failure</b>
                                 ${
                                     action.degreesOfSuccess?.criticalFailure
                                         ? `<br />${action.degreesOfSuccess.criticalFailure}`
                                         : ""
                                 }`
-                            : `<br />❌ <b>Failure</b>
-                                ${
-                                    action.degreesOfSuccess?.failure
-                                        ? `<br />${action.degreesOfSuccess.failure}`
-                                        : ""
-                                }`
-                }
-            `;
+                    }
+                `;
+            }
+        });
+        if (validTargets) {
+            ChatMessage.create({
+                user: game.user._id,
+                speaker: ChatMessage.getSpeaker(),
+                content: resultMessage,
+            });
         }
     });
-    if (game.user.targets.size > 0) {
-        ChatMessage.create({
-            user: game.user._id,
-            speaker: ChatMessage.getSpeaker(),
-            content: resultMessage,
-        });
-    }
 })();
