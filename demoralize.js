@@ -17,7 +17,7 @@ const action = {
         action.skill.toLowerCase(),
     ]);
     actor.data.data.skills[skillKey].roll(event, options, (roll) => {
-        let resultMessage = "<hr /><h3>Demoralize</h3>";
+        let resultMessage = `<hr /><h3>${action.name}</h3>`;
         let validTarget = false;
         game.user.targets.forEach((target) => {
             const dc =
