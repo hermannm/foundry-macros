@@ -8,8 +8,25 @@ const action = {
         success: "The target falls and lands prone.",
         criticalFailure: "You lose your balance and fall and land prone.",
     },
+    multipleAttackPenalty: true,
 };
 (async () => {
+    let penalty;
+    if (action.multipleAttackPenalty) {
+        if (event.altKey) {
+            penalty = action.multipleAttackPenalty === "agile" ? -4 : -5;
+        } else if (event.ctrlKey) {
+            penalty = action.multipleAttackPenalty === "agile" ? -8 : -10;
+        }
+        if (penalty) {
+            await actor.addCustomModifier(
+                action.skill.toLowerCase(),
+                "Multiple Attack Penalty",
+                penalty,
+                "untyped"
+            );
+        }
+    }
     const skillKey = Object.keys(actor.data.data.skills).find(
         (key) => actor.data.data.skills[key].name === action.skill.toLowerCase()
     );
@@ -82,4 +99,10 @@ const action = {
             });
         }
     });
+    if (penalty) {
+        actor.removeCustomModifier(
+            action.skill.toLowerCase(),
+            "Multiple Attack Penalty"
+        );
+    }
 })();
