@@ -1,19 +1,10 @@
-const effect = {
-    name: "Lay on Hands",
-    modifier: {
-        stat: "ac",
-        value: 2,
-        type: "status",
-    },
-    iconPath: "systems/pf2e/icons/spells/lay-on-hands.jpg",
-};
-const {
-    _id: focusID,
-    data: {
-        focus: { points: focusPoints, pool: focusPool },
-    },
-} = actor.data.items.find((item) => item.name === "Focus Spells");
 (async () => {
+    const {
+        _id: focusID,
+        data: {
+            focus: { points: focusPoints, pool: focusPool },
+        },
+    } = actor.data.items.find((item) => item.name === "Focus Spells");
     if (event.altKey) {
         if (focusPoints < focusPool) {
             ChatMessage.create({
@@ -28,26 +19,9 @@ const {
         } else {
             ui.notifications.warn("Focus pool already full.");
         }
-    } else if (
-        (actor.data.data.customModifiers[effect.modifier.stat] || []).some(
-            (customModifier) => customModifier.name === effect.name
-        )
-    ) {
-        if (token.data.effects.includes(effect.iconPath)) {
-            await token.toggleEffect(effect.iconPath);
-        }
-        await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     } else if (focusPoints <= 0) {
         ui.notifications.warn("You have no focus points left.");
     } else {
-        const itemID =
-            actor.items
-                .filter((item) => item.data.type === "action")
-                .find((item) => item.data.name === effect.name)?._id ??
-            actor.items.find((item) => item.data.name === effect.name)?._id;
-        if (itemID) {
-            await game.pf2e.rollItemMacro(itemID);
-        }
         await DicePF2e.damageRoll({
             event: event,
             parts: new Array(
@@ -61,12 +35,6 @@ const {
         if (!token.data.effects.includes(effect.iconPath)) {
             await token.toggleEffect(effect.iconPath);
         }
-        await actor.addCustomModifier(
-            effect.modifier.stat,
-            effect.name,
-            effect.modifier.value,
-            effect.modifier.type
-        );
         await actor.updateEmbeddedEntity("OwnedItem", {
             _id: focusID,
             data: { focus: { points: focusPoints - 1, pool: focusPool } },
