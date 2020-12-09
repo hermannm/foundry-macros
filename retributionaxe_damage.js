@@ -1,4 +1,8 @@
-const weapon = "Retribution Axe";
+const weapon = {
+    name: "Retribution Axe",
+    criticalSpecialization:
+        "Choose one creature adjacent to the initial target and within reach. If its AC is lower than your attack roll result for the critical hit, you deal damage to that creature equal to the result of the weapon damage die you rolled (including extra dice for its potency rune, if any). This amount isn’t doubled, and no bonuses or other additional dice apply to this damage.",
+};
 const effectToConsume = {
     name: "Retribution",
     modifier: {
@@ -9,14 +13,22 @@ const effectToConsume = {
 };
 (async () => {
     if (event.altKey) {
-        (actor.data.data.actions ?? [])
+        await (actor.data.data.actions ?? [])
             .filter((action) => action.type === "strike")
-            .find((strike) => strike.name === weapon)
+            .find((strike) => strike.name === weapon.name)
             ?.critical(event);
+        if (weapon.criticalSpecialization) {
+            ChatMessage.create({
+                user: game.user._id,
+                speaker: ChatMessage.getSpeaker(),
+                content: `<hr><h3>Critical Specialization</h3><hr>
+                    ${weapon.criticalSpecialization}`,
+            });
+        }
     } else {
         (actor.data.data.actions ?? [])
             .filter((action) => action.type === "strike")
-            .find((strike) => strike.name === weapon)
+            .find((strike) => strike.name === weapon.name)
             ?.damage(event);
     }
     if (
