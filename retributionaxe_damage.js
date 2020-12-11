@@ -51,24 +51,29 @@ const optionalEffect = {
     const dialog = new Dialog({
         title: optionalEffect.name,
         content: `<h3>Apply ${optionalEffect.name}?</h3><hr>
-            ${optionalEffect.description}<hr>`,
+            ${optionalEffect.description}<hr>
+            <div class="dialog-buttons">
+                <button
+                    class="dialog-button apply"
+                    data-button="apply"
+                    style="margin-bottom:5px;"
+                >
+                    Apply
+                </button>
+                <button
+                    class="dialog-button skip"
+                    data-button="skip"
+                    style="margin-bottom:5px;"
+                >
+                    Skip
+                </button>
+            </div>
+        `,
         buttons: {
-            apply: {
-                label: "Apply",
-                callback: () => {
-                    damageWithEffect(false);
-                },
-            },
             applyCrit: {
                 label: "Apply (crit)",
                 callback: () => {
                     damageWithEffect(true);
-                },
-            },
-            skip: {
-                label: "Skip",
-                callback: () => {
-                    damage(false);
                 },
             },
             skipCrit: {
@@ -79,5 +84,20 @@ const optionalEffect = {
             },
         },
     });
+    await console.log(dialog);
     dialog.render(true);
+    dialog.data.buttons.apply = {
+        callback: () => {
+            damageWithEffect(false);
+        },
+        cssClass: "apply",
+        label: "Apply",
+    };
+    dialog.data.buttons.skip = {
+        callback: () => {
+            damage(false);
+        },
+        cssClass: "skip",
+        label: "Skip",
+    };
 })();
