@@ -84,20 +84,15 @@ const optionalEffect = {
             },
         },
     });
-    await console.log(dialog);
     dialog.render(true);
     dialog.data.buttons.apply = {
         callback: () => {
             damageWithEffect(false);
         },
-        cssClass: "apply",
-        label: "Apply",
     };
     dialog.data.buttons.skip = {
         callback: () => {
             damage(false);
         },
-        cssClass: "skip",
-        label: "Skip",
     };
 })();
