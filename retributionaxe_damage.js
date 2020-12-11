@@ -42,57 +42,57 @@ const optionalEffect = {
             optionalEffect.modifier.value,
             optionalEffect.modifier.type
         );
-        await damage(crit);
+        damage(crit);
         await actor.removeCustomModifier(
             optionalEffect.modifier.stat,
             optionalEffect.name
         );
     };
     const dialog = new Dialog({
-        title: optionalEffect.name,
-        content: `<h3>Apply ${optionalEffect.name}?</h3><hr>
-            ${optionalEffect.description}<hr>
+        title: `${weapon.name} Damage`,
+        content: `
+            <strong>${optionalEffect.name}:</strong> ${optionalEffect.description}<hr>
             <div class="dialog-buttons">
                 <button
-                    class="dialog-button apply"
-                    data-button="apply"
+                    class="dialog-button damage"
+                    data-button="damage"
                     style="margin-bottom:5px;"
                 >
-                    Apply
+                    Damage
                 </button>
                 <button
-                    class="dialog-button skip"
-                    data-button="skip"
+                    class="dialog-button critical"
+                    data-button="critical"
                     style="margin-bottom:5px;"
                 >
-                    Skip
+                    Critical
                 </button>
             </div>
         `,
         buttons: {
-            applyCrit: {
-                label: "Apply (crit)",
+            damageRetribution: {
+                label: "Damage (Retribution)",
                 callback: () => {
-                    damageWithEffect(true);
+                    damageWithEffect(false);
                 },
             },
-            skipCrit: {
-                label: "Skip (crit)",
+            criticalRetribution: {
+                label: "Critical (Retribution)",
                 callback: () => {
-                    damage(true);
+                    damageWithEffect(true);
                 },
             },
         },
     });
     dialog.render(true);
-    dialog.data.buttons.apply = {
-        callback: () => {
-            damageWithEffect(false);
-        },
-    };
-    dialog.data.buttons.skip = {
+    dialog.data.buttons.damage = {
         callback: () => {
             damage(false);
+        },
+    };
+    dialog.data.buttons.critical = {
+        callback: () => {
+            damage(true);
         },
     };
 })();
