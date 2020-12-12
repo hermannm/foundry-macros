@@ -42,7 +42,7 @@ const optionalEffect = {
     const dialog = new Dialog({
         title: `${weapon} Strike`,
         content: `
-            <strong>${optionalEffect.name}:</strong> ${optionalEffect.description}<hr>
+            <b>${optionalEffect.name}:</b> ${optionalEffect.description}<hr>
             <div class="dialog-buttons">
                 <button
                     class="dialog-button first"

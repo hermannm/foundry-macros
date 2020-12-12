@@ -11,7 +11,7 @@ const action = {
     // criticalSuccess, success, criticalFailure, failure - leave step absent for no effect
     degreesOfSuccess: {
         criticalSuccess:
-            "Your opponent is restrained until the end of your next turn unless you move or your opponent Escapes (page 470).",
+            "Your opponent is restrained until the end of your next turn unless you move or your opponent Escapes.",
         success:
             "Your opponent is grabbed until the end of your next turn unless you move or your opponent Escapes.",
         failure:
