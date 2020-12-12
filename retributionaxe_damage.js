@@ -9,32 +9,23 @@ const optionalEffect = {
         type: "circumstance",
     },
 };
-const axeCrit = async (clickEvent) => {
-    const content = game.messages._source[game.messages.size - 1].content;
-    let diceResults = [];
-    const rollIdentifier = `<li class="roll die`;
-    for (
-        let i = content.indexOf(rollIdentifier);
-        i >= 0;
-        i = content.indexOf(rollIdentifier, i + 1)
-    ) {
-        diceResults.push(
-            parseInt(
-                content.slice(
-                    content.indexOf(">", i) + 1,
-                    content.indexOf("</", i)
-                )
-            )
-        );
+const criticalSpecialization = (roll) => {
+    const parts = [];
+    for (const term of roll.terms) {
+        if (term?.results) {
+            for (const result of term.results) {
+                parts.push(result.result);
+            }
+        }
     }
-    await DicePF2e.damageRoll({
-        event: clickEvent,
-        parts: diceResults,
+    DicePF2e.damageRoll({
+        event,
+        parts,
         actor,
         data: actor.data.data,
         title: `
             <div style="line-height:133%">
-                <strong>Critical Specialization</strong> (Axe)
+                <b>Critical Specialization</b> (Axe)
                 <br>
                 Choose one creature adjacent to the initial target and within reach. If its AC is lower than your attack roll result for the critical hit, you deal damage to that creature equal to the result of the weapon damage die you rolled (including extra dice for its potency rune, if any). This amount isn’t doubled, and no bonuses or other additional dice apply to this damage.
             </div>
@@ -43,20 +34,17 @@ const axeCrit = async (clickEvent) => {
     });
 };
 (async () => {
-    const damage = async (crit) => {
-        const clickEvent = event;
+    const damage = (crit) => {
         if (crit) {
-            await (actor.data.data.actions ?? [])
+            (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
-                ?.critical(clickEvent);
-            await new Promise(r => setTimeout(r, 200));
-            await axeCrit(clickEvent);
+                ?.critical(event, [], criticalSpecialization);
         } else {
             (actor.data.data.actions ?? [])
                 .filter((action) => action.type === "strike")
                 .find((strike) => strike.name === weapon)
-                ?.damage(clickEvent);
+                ?.damage(event);
         }
     };
     const damageWithEffect = async (crit) => {
@@ -75,7 +63,7 @@ const axeCrit = async (clickEvent) => {
     const dialog = new Dialog({
         title: `${weapon} Damage`,
         content: `
-            <strong>${optionalEffect.name}:</strong> ${optionalEffect.description}<hr>
+            <b>${optionalEffect.name}:</b> ${optionalEffect.description}<hr>
             <div class="dialog-buttons">
                 <button
                     class="dialog-button damage"
