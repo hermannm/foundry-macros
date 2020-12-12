@@ -2,20 +2,17 @@ const action = {
     name: "Trip",
     skill: "Athletics",
     targetDC: "Reflex",
-    // not required - shows on roll dialog
     requirements:
         "You have at least one hand free. Your target can’t be more than one size larger than you.",
-    // not required - shows on roll dialog
     description:
         "You try to knock an opponent to the ground. Attempt an Athletics check against the target’s Reflex DC.",
-    // criticalSuccess, success, criticalFailure, failure - leave step absent for no effect
     degreesOfSuccess: {
         criticalSuccess:
             "The target falls and lands prone and takes 1d6 bludgeoning damage.",
         success: "The target falls and lands prone.",
         criticalFailure: "You lose your balance and fall and land prone.",
-    },
-    maxSize: 1, //maximum steps up in size that the target can be
+    }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
+    maxSize: 1, // maximum steps up in size that the target can be
     multipleAttackPenalty: true, // absent (false), true, or "agile"
 };
 (async () => {

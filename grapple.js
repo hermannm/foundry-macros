@@ -2,13 +2,10 @@ const action = {
     name: "Grapple",
     skill: "Athletics",
     targetDC: "Fortitude",
-    // not required - shows on roll dialog
     requirements:
         "You have at least one free hand or have your target grappled or restrained. Your target isn’t more than one size larger than you.",
-    // not required - shows on roll dialog
     description:
         "You attempt to grab an opponent with your free hand. Attempt an Athletics check against their Fortitude DC. You can also Grapple to keep your hold on a creature you already grabbed.",
-    // criticalSuccess, success, criticalFailure, failure - leave step absent for no effect
     degreesOfSuccess: {
         criticalSuccess:
             "Your opponent is restrained until the end of your next turn unless you move or your opponent Escapes.",
@@ -18,8 +15,8 @@ const action = {
             "You fail to grab your opponent. If you already had the opponent grabbed or restrained using a Grapple, those conditions on that creature end.",
         criticalFailure:
             "If you already had the opponent grabbed or restrained, it breaks free. Your target can either grab you, as if it succeeded at using the Grapple action against you, or force you to fall and land prone.",
-    },
-    maxSize: 1, //maximum steps up in size that the target can be
+    }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
+    maxSize: 1, // maximum steps up in size that the target can be
     multipleAttackPenalty: true, // absent (false), true, or "agile"
 };
 (async () => {

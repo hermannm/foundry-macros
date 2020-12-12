@@ -2,21 +2,18 @@ const action = {
     name: "Shove",
     skill: "Athletics",
     targetDC: "Fortitude",
-    // not required - shows on roll dialog
     requirements:
         "You have at least one hand free. The target can’t be more than one size larger than you.",
-    // not required - shows on roll dialog
     description:
         "You push an opponent away from you. Attempt an Athletics check against your opponent’s Fortitude DC.",
-    // criticalSuccess, success, criticalFailure, failure - leave step absent for no effect
     degreesOfSuccess: {
         criticalSuccess:
             "You push your opponent up to 10 feet away from you. You can Stride after it, but you must move the same distance and in the same direction.",
         success:
             "You push your opponent back 5 feet. You can Stride after it, but you must move the same distance and in the same direction.",
         criticalFailure: "You lose your balance, fall, and land prone.",
-    },
-    maxSize: 1, //maximum steps up in size that the target can be
+    }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
+    maxSize: 1, // maximum steps up in size that the target can be
     multipleAttackPenalty: true, // absent (false), true, or "agile"
 };
 (async () => {

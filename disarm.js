@@ -2,13 +2,10 @@ const action = {
     name: "Disarm",
     skill: "Athletics",
     targetDC: "Reflex",
-    // not required - shows on roll dialog
     requirements:
         "You have at least one hand free. The target can’t be more than one size larger than you.",
-    // not required - shows on roll dialog
     description:
         "You try to knock something out of an opponent’s grasp. Attempt an Athletics check against the opponent’s Reflex DC.",
-    // criticalSuccess, success, criticalFailure, failure - leave step absent for no effect
     degreesOfSuccess: {
         criticalSuccess:
             "You knock the item out of the opponent’s grasp. It falls to the ground in the opponent’s space.",
@@ -16,8 +13,8 @@ const action = {
             "You weaken your opponent’s grasp on the item. Until the start of that creature’s turn, attempts to Disarm the opponent of that item gain a +2 circumstance bonus, and the target takes a –2 circumstance penalty to attacks with the item or other checks requiring a firm grasp on the item.",
         criticalFailure:
             "You lose your balance and become flat-footed until the start of your next turn.",
-    },
-    maxSize: 1, //maximum steps up in size that the target can be
+    }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
+    maxSize: 1, // maximum steps up in size that the target can be
     multipleAttackPenalty: true, // absent (false), true, or "agile"
 };
 (async () => {
