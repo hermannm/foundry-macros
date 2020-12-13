@@ -15,7 +15,7 @@ const action = {
             "You lose your balance and become flat-footed until the start of your next turn.",
     }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
     maxSize: 1, // maximum steps up in size that the target can be
-    multipleAttackPenalty: true, // absent (false), true, or "agile"
+    attack: true, // absent (false), true, or "agile"
 };
 (async () => {
     const skillRoll = () => {
@@ -28,6 +28,10 @@ const action = {
             "skill-check",
             action.skill.toLowerCase(),
         ]);
+        options.push(action.name.toLowerCase());
+        if (action.attack) {
+            options.push("attack");
+        }
         actor.data.data.skills[skillKey].roll(event, options, (roll) => {
             let resultMessage = `<hr /><h3>${action.name}</h3>`;
             let validTarget = false;
@@ -114,7 +118,7 @@ const action = {
             "Multiple Attack Penalty"
         );
     };
-    if (action.multipleAttackPenalty) {
+    if (action.attack) {
         new Dialog({
             title: `${action.name}`,
             content: `
@@ -133,17 +137,13 @@ const action = {
                 second: {
                     label: "2nd attack",
                     callback: () => {
-                        skillRollWithMAP(
-                            action.multipleAttackPenalty === "agile" ? -4 : -5
-                        );
+                        skillRollWithMAP(action.attack === "agile" ? -4 : -5);
                     },
                 },
                 third: {
                     label: "3rd attack",
                     callback: () => {
-                        skillRollWithMAP(
-                            action.multipleAttackPenalty === "agile" ? -8 : -10
-                        );
+                        skillRollWithMAP(action.attack === "agile" ? -8 : -10);
                     },
                 },
             },
