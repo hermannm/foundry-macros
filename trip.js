@@ -102,6 +102,28 @@ const action = {
                 });
             }
         });
+
+    };
+    const skillRollWithitem = async () => {
+        let potency = 0;
+        actor.data.items.filter(w => w.type === "weapon" && w.data.equipped?.value === true && w.data.traits.value?.some(t => t === action.name.toLowerCase())).forEach(t => potency = (potency >= parseInt(t.data.potencyRune.value))? potency : parseInt(t.data.potencyRune.value));
+        if (potency >= 1) { // to filter +null
+            await actor.addCustomModifier(
+                action.skill.toLowerCase(),
+                "WeaponPotency",
+                potency,
+                "item"
+            );
+        }
+        skillRoll();
+        await actor.removeCustomModifier(
+            action.skill.toLowerCase(),
+            "WeaponPotency"
+        );
+        await actor.removeCustomModifier(
+            action.skill.toLowerCase(),
+            "Multiple Attack Penalty"
+        );
     };
     const skillRollWithMAP = async (penalty) => {
         await actor.addCustomModifier(
@@ -110,7 +132,7 @@ const action = {
             penalty,
             "untyped"
         );
-        skillRoll();
+        skillRollWithitem();
         await actor.removeCustomModifier(
             action.skill.toLowerCase(),
             "Multiple Attack Penalty"
@@ -130,7 +152,7 @@ const action = {
             buttons: {
                 first: {
                     label: "1st attack",
-                    callback: skillRoll,
+                    callback: skillRollWithitem
                 },
                 second: {
                     label: "2nd attack",
@@ -148,6 +170,6 @@ const action = {
             default: "first",
         }).render(true);
     } else {
-        skillRoll();
+        skillRollWithitem();
     }
 })();
