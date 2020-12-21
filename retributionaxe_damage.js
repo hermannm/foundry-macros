@@ -1,8 +1,9 @@
 const weapon = "Retribution Axe";
-const optionalEffect = {
+const effect = {
     name: "Retribution",
     description:
         "Whenever a creature damages you with an attack, the skull changes its appearance to look like the face of that creature. You gain a +2 circumstance bonus to your next damage roll against that creature before the end of your next turn. Because the face reshapes each time you’re damaged, you get the additional damage only if you attack the creature that damaged you most recently.",
+    icon: "skull", //icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
     modifier: {
         stat: "damage",
         value: 2,
@@ -35,35 +36,32 @@ const criticalSpecialization = (roll) => {
 };
 (async () => {
     const damage = (crit) => {
+        const strikeItem = (actor.data.data.actions ?? [])
+            .filter((action) => action.type === "strike")
+            .find((strike) => strike.name === weapon);
         if (crit) {
-            (actor.data.data.actions ?? [])
-                .filter((action) => action.type === "strike")
-                .find((strike) => strike.name === weapon)
-                ?.critical(event, [], criticalSpecialization);
+            strikeItem.critical(event, [], criticalSpecialization);
         } else {
-            (actor.data.data.actions ?? [])
-                .filter((action) => action.type === "strike")
-                .find((strike) => strike.name === weapon)
-                ?.damage(event);
+            strikeItem.damage(event);
         }
     };
     const damageWithEffect = async (crit) => {
         await actor.addCustomModifier(
-            optionalEffect.modifier.stat,
-            optionalEffect.name,
-            optionalEffect.modifier.value,
-            optionalEffect.modifier.type
+            effect.modifier.stat,
+            effect.name,
+            effect.modifier.value,
+            effect.modifier.type
         );
         damage(crit);
         await actor.removeCustomModifier(
-            optionalEffect.modifier.stat,
-            optionalEffect.name
+            effect.modifier.stat,
+            effect.name
         );
     };
     const dialog = new Dialog({
         title: `${weapon} Damage`,
         content: `
-            <b>${optionalEffect.name}:</b> ${optionalEffect.description}<hr>
+            <b><i class="fas fa-${effect.icon}"></i> ${effect.name}:</b> ${effect.description}<hr>
             <div class="dialog-buttons">
                 <button
                     class="dialog-button damage"
@@ -83,13 +81,13 @@ const criticalSpecialization = (roll) => {
         `,
         buttons: {
             damageRetribution: {
-                label: "Damage (Retribution)",
+                label: `<i class="fas fa-${effect.icon}"></i> Damage`,
                 callback: () => {
                     damageWithEffect(false);
                 },
             },
             criticalRetribution: {
-                label: "Critical (Retribution)",
+                label: `<i class="fas fa-${effect.icon}"></i> Critical`,
                 callback: () => {
                     damageWithEffect(true);
                 },
