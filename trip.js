@@ -16,11 +16,15 @@ const action = {
     attack: true, // absent (false), true, or "agile"
 };
 (async () => {
+    const skill =
+        actor.data.data.skills[
+            Object.keys(actor.data.data.skills).find(
+                (key) =>
+                    actor.data.data.skills[key].name ===
+                    action.skill.toLowerCase()
+            )
+        ];
     const skillRoll = () => {
-        const skillKey = Object.keys(actor.data.data.skills).find(
-            (key) =>
-                actor.data.data.skills[key].name === action.skill.toLowerCase()
-        );
         const options = actor.getRollOptions([
             "all",
             "skill-check",
@@ -30,7 +34,7 @@ const action = {
         if (action.attack) {
             options.push("attack");
         }
-        actor.data.data.skills[skillKey].roll(event, options, (roll) => {
+        skill.roll(event, options, (roll) => {
             let resultMessage = `<hr /><h3>${action.name}</h3>`;
             let validTarget = false;
             const sizeArray = Object.keys(CONFIG.PF2E.actorSizes);
@@ -103,7 +107,7 @@ const action = {
             }
         });
     };
-    const attackRoll = async (MAP) => {
+    if (action.attack) {
         const weapon = actor.data.items
             .filter(
                 (item) =>
@@ -121,48 +125,53 @@ const action = {
                         : item2,
                 null
             );
-        const potency = parseInt(weapon?.data.potencyRune?.value) ?? 0;
+        const potency = parseInt(weapon?.data.potencyRune?.value ?? 0);
         const agile =
             action.attack === "agile" ||
             (weapon?.data.traits.value?.some((trait) => trait === "agile") ??
                 false);
-        let penalty = 0;
-        if (MAP === 2) {
-            penalty = agile ? -4 : -5;
-        } else if (MAP === 3) {
-            penalty = agile ? -8 : -10;
-        }
-        if (potency) {
-            await actor.addCustomModifier(
-                action.skill.toLowerCase(),
-                "Item Bonus",
-                potency,
-                "item"
-            );
-        }
-        if (penalty) {
-            await actor.addCustomModifier(
-                action.skill.toLowerCase(),
-                "Multiple Attack Penalty",
-                penalty,
-                "untyped"
-            );
-        }
-        skillRoll();
-        if (potency) {
-            await actor.removeCustomModifier(
-                action.skill.toLowerCase(),
-                "Item Bonus"
-            );
-        }
-        if (penalty) {
-            await actor.removeCustomModifier(
-                action.skill.toLowerCase(),
-                "Multiple Attack Penalty"
-            );
-        }
-    };
-    if (action.attack) {
+        const getPenalty = (MAP) => {
+            let penalty = 0;
+            if (MAP === 2) {
+                penalty = agile ? -4 : -5;
+            } else if (MAP === 3) {
+                penalty = agile ? -8 : -10;
+            }
+            return penalty;
+        };
+        const attackRoll = async (penalty) => {
+            if (potency) {
+                await actor.addCustomModifier(
+                    action.skill.toLowerCase(),
+                    "Item Bonus",
+                    potency,
+                    "item"
+                );
+            }
+            if (penalty !== 0) {
+                await actor.addCustomModifier(
+                    action.skill.toLowerCase(),
+                    "Multiple Attack Penalty",
+                    penalty,
+                    "untyped"
+                );
+            }
+            skillRoll();
+            if (potency) {
+                await actor.removeCustomModifier(
+                    action.skill.toLowerCase(),
+                    "Item Bonus"
+                );
+            }
+            if (penalty !== 0) {
+                await actor.removeCustomModifier(
+                    action.skill.toLowerCase(),
+                    "Multiple Attack Penalty"
+                );
+            }
+        };
+        const modToString = (modifier) => 
+            modifier >= 0 ? `+${modifier}` : `${modifier}`;
         new Dialog({
             title: `${action.name}`,
             content: `
@@ -175,21 +184,27 @@ const action = {
             `,
             buttons: {
                 first: {
-                    label: "1st attack",
+                    label: `1st attack (${modToString(
+                        skill.totalModifier + potency
+                    )})`,
                     callback: () => {
-                        attackRoll(1);
+                        attackRoll(getPenalty(1));
                     },
                 },
                 second: {
-                    label: "2nd attack",
+                    label: `2nd attack (${modToString(
+                        skill.totalModifier + potency + getPenalty(2)
+                    )})`,
                     callback: () => {
-                        attackRoll(2);
+                        attackRoll(getPenalty(2));
                     },
                 },
                 third: {
-                    label: "3rd attack",
+                    label: `3rd attack (${modToString(
+                        skill.totalModifier + potency + getPenalty(3)
+                    )})`,
                     callback: () => {
-                        attackRoll(3);
+                        attackRoll(getPenalty(3));
                     },
                 },
             },
