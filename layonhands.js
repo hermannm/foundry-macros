@@ -32,9 +32,6 @@
             title: "Lay on Hands - Healing",
             speaker: ChatMessage.getSpeaker(),
         });
-        if (!token.data.effects.includes(effect.iconPath)) {
-            await token.toggleEffect(effect.iconPath);
-        }
         await actor.updateEmbeddedEntity("OwnedItem", {
             _id: focusID,
             data: { focus: { points: focusPoints - 1, pool: focusPool } },
