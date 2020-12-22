@@ -8,15 +8,18 @@ const action = {
     },
 };
 (async () => {
-    const skillKey = Object.keys(actor.data.data.skills).find(
-        (key) => actor.data.data.skills[key].name === action.skill.toLowerCase()
-    );
+    const skill =
+        actor.data.data.skills[
+            Object.entries(actor.data.data.skills).find(
+                (entry) => entry[1].name === action.skill.toLowerCase()
+            )[0]
+        ];
     const options = actor.getRollOptions([
         "all",
         "skill-check",
         action.skill.toLowerCase(),
     ]);
-    actor.data.data.skills[skillKey].roll(event, options, (roll) => {
+    skill.roll(event, options, (roll) => {
         let resultMessage = `<hr /><h3>${action.name}</h3>`;
         let validTarget = false;
         for (const target of game.user.targets) {
