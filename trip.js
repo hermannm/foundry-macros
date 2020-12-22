@@ -188,7 +188,9 @@ const action = {
                 },
                 second: {
                     label: `2nd attack (${modToString(
-                        actor.data.data.skills[skillKey].totalModifier + potency + getPenalty(2)
+                        actor.data.data.skills[skillKey].totalModifier +
+                            potency +
+                            getPenalty(2)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(2));
@@ -196,7 +198,9 @@ const action = {
                 },
                 third: {
                     label: `3rd attack (${modToString(
-                        actor.data.data.skills[skillKey].totalModifier + potency + getPenalty(3)
+                        actor.data.data.skills[skillKey].totalModifier +
+                            potency +
+                            getPenalty(3)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(3));

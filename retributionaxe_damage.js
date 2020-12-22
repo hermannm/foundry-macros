@@ -11,7 +11,7 @@ const effect = {
     name: "Retribution",
     description:
         "Whenever a creature damages you with an attack, the skull changes its appearance to look like the face of that creature. You gain a +2 circumstance bonus to your next damage roll against that creature before the end of your next turn. Because the face reshapes each time you’re damaged, you get the additional damage only if you attack the creature that damaged you most recently.",
-    icon: "skull", //icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
+    icon: "skull", // icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
     modifier: {
         stat: "damage",
         value: 2,
