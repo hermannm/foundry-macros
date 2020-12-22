@@ -16,9 +16,12 @@ const action = {
     attack: true, // absent (false), true, or "agile"
 };
 (async () => {
-    const skillKey = Object.keys(actor.data.data.skills).find(
-        (key) => actor.data.data.skills[key].name === action.skill.toLowerCase()
-    );
+    const skill = () =>
+        actor.data.data.skills[
+            Object.entries(actor.data.data.skills).find(
+                (entry) => entry[1].name === action.skill.toLowerCase()
+            )[0]
+        ];
     const skillRoll = () => {
         const options = actor.getRollOptions([
             "all",
@@ -29,7 +32,7 @@ const action = {
         if (action.attack) {
             options.push("attack");
         }
-        actor.data.data.skills[skillKey].roll(event, options, (roll) => {
+        skill().roll(event, options, (roll) => {
             let resultMessage = `<hr /><h3>${action.name}</h3>`;
             let validTarget = false;
             const sizeArray = Object.keys(CONFIG.PF2E.actorSizes);
@@ -180,7 +183,7 @@ const action = {
             buttons: {
                 first: {
                     label: `1st attack (${modToString(
-                        actor.data.data.skills[skillKey].totalModifier + potency
+                        skill().totalModifier + potency
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(1));
@@ -188,9 +191,7 @@ const action = {
                 },
                 second: {
                     label: `2nd attack (${modToString(
-                        actor.data.data.skills[skillKey].totalModifier +
-                            potency +
-                            getPenalty(2)
+                        skill().totalModifier + potency + getPenalty(2)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(2));
@@ -198,9 +199,7 @@ const action = {
                 },
                 third: {
                     label: `3rd attack (${modToString(
-                        actor.data.data.skills[skillKey].totalModifier +
-                            potency +
-                            getPenalty(3)
+                        skill().totalModifier + potency + getPenalty(3)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(3));

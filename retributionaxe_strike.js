@@ -11,21 +11,20 @@ const effect = {
     },
 };
 (async () => {
-    const strikeIndex = actor.data.data.actions.indexOf(
+    const strikeItem = () =>
         (actor.data.data.actions ?? [])
             .filter((action) => action.type === "strike")
-            .find((strike) => strike.name === weapon)
-    );
+            .find((strike) => strike.name === weapon);
     const strike = (MAP) => {
         switch (MAP) {
             case 1:
-                actor.data.data.actions[strikeIndex].attack(event);
+                strikeItem().attack(event);
                 break;
             case 2:
-                actor.data.data.actions[strikeIndex].variants[1]?.roll(event);
+                strikeItem().variants[1]?.roll(event);
                 break;
             case 3:
-                actor.data.data.actions[strikeIndex].variants[2]?.roll(event);
+                strikeItem().variants[2]?.roll(event);
                 break;
         }
     };
@@ -39,16 +38,14 @@ const effect = {
         strike(MAP);
         await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     };
-    const modifiers = actor.data.data.actions[strikeIndex].variants.map(
-        (variant) => {
-            let modifier = actor.data.data.actions[strikeIndex].totalModifier;
-            const splitLabel = variant.label.split(" ");
-            if (splitLabel[0] === "MAP") {
-                modifier += parseInt(splitLabel[1]);
-            }
-            return modifier;
+    const modifiers = strikeItem().variants.map((variant) => {
+        let modifier = strikeItem().totalModifier;
+        const splitLabel = variant.label.split(" ");
+        if (splitLabel[0] === "MAP") {
+            modifier += parseInt(splitLabel[1]);
         }
-    );
+        return modifier;
+    });
     const modToString = (modifier) =>
         modifier >= 0 ? `+${modifier}` : `${modifier}`;
     const dialog = new Dialog({
