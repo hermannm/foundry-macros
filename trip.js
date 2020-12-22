@@ -16,14 +16,9 @@ const action = {
     attack: true, // absent (false), true, or "agile"
 };
 (async () => {
-    const skill =
-        actor.data.data.skills[
-            Object.keys(actor.data.data.skills).find(
-                (key) =>
-                    actor.data.data.skills[key].name ===
-                    action.skill.toLowerCase()
-            )
-        ];
+    const skillKey = Object.keys(actor.data.data.skills).find(
+        (key) => actor.data.data.skills[key].name === action.skill.toLowerCase()
+    );
     const skillRoll = () => {
         const options = actor.getRollOptions([
             "all",
@@ -34,7 +29,7 @@ const action = {
         if (action.attack) {
             options.push("attack");
         }
-        skill.roll(event, options, (roll) => {
+        actor.data.data.skills[skillKey].roll(event, options, (roll) => {
             let resultMessage = `<hr /><h3>${action.name}</h3>`;
             let validTarget = false;
             const sizeArray = Object.keys(CONFIG.PF2E.actorSizes);
@@ -148,7 +143,7 @@ const action = {
                     "item"
                 );
             }
-            if (penalty !== 0) {
+            if (penalty) {
                 await actor.addCustomModifier(
                     action.skill.toLowerCase(),
                     "Multiple Attack Penalty",
@@ -163,14 +158,14 @@ const action = {
                     "Item Bonus"
                 );
             }
-            if (penalty !== 0) {
+            if (penalty) {
                 await actor.removeCustomModifier(
                     action.skill.toLowerCase(),
                     "Multiple Attack Penalty"
                 );
             }
         };
-        const modToString = (modifier) => 
+        const modToString = (modifier) =>
             modifier >= 0 ? `+${modifier}` : `${modifier}`;
         new Dialog({
             title: `${action.name}`,
@@ -185,7 +180,7 @@ const action = {
             buttons: {
                 first: {
                     label: `1st attack (${modToString(
-                        skill.totalModifier + potency
+                        actor.data.data.skills[skillKey].totalModifier + potency
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(1));
@@ -193,7 +188,7 @@ const action = {
                 },
                 second: {
                     label: `2nd attack (${modToString(
-                        skill.totalModifier + potency + getPenalty(2)
+                        actor.data.data.skills[skillKey].totalModifier + potency + getPenalty(2)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(2));
@@ -201,7 +196,7 @@ const action = {
                 },
                 third: {
                     label: `3rd attack (${modToString(
-                        skill.totalModifier + potency + getPenalty(3)
+                        actor.data.data.skills[skillKey].totalModifier + potency + getPenalty(3)
                     )})`,
                     callback: () => {
                         attackRoll(getPenalty(3));

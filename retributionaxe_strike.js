@@ -3,7 +3,7 @@ const effect = {
     name: "Sweep",
     description:
         "When you attack with this weapon, you gain a +1 circumstance bonus to your attack roll if you already attempted to attack a different target this turn using this weapon.",
-    icon: "users-slash", //icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
+    icon: "users-slash", // icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
     modifier: {
         stat: "attack",
         value: 1,
@@ -11,29 +11,21 @@ const effect = {
     },
 };
 (async () => {
-    const strikeItem = (actor.data.data.actions ?? [])
-        .filter((action) => action.type === "strike")
-        .find((strike) => strike.name === weapon);
-    const modifiers = strikeItem.variants.map((variant) => {
-        let modifier = strikeItem.totalModifier;
-        const splitLabel = variant.label.split(" ");
-        if (splitLabel[0] === "MAP") {
-            modifier += parseInt(splitLabel[1]);
-        }
-        return modifier;
-    });
-    const modToString = (modifier) =>
-        modifier >= 0 ? `+${modifier}` : `${modifier}`;
+    const strikeIndex = actor.data.data.actions.indexOf(
+        (actor.data.data.actions ?? [])
+            .filter((action) => action.type === "strike")
+            .find((strike) => strike.name === weapon)
+    );
     const strike = (MAP) => {
         switch (MAP) {
             case 1:
-                strikeItem.attack(event);
+                actor.data.data.actions[strikeIndex].attack(event);
                 break;
             case 2:
-                strikeItem.variants[1]?.roll(event);
+                actor.data.data.actions[strikeIndex].variants[1]?.roll(event);
                 break;
             case 3:
-                strikeItem.variants[2]?.roll(event);
+                actor.data.data.actions[strikeIndex].variants[2]?.roll(event);
                 break;
         }
     };
@@ -47,10 +39,24 @@ const effect = {
         strike(MAP);
         await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     };
+    const modifiers = actor.data.data.actions[strikeIndex].variants.map(
+        (variant) => {
+            let modifier = actor.data.data.actions[strikeIndex].totalModifier;
+            const splitLabel = variant.label.split(" ");
+            if (splitLabel[0] === "MAP") {
+                modifier += parseInt(splitLabel[1]);
+            }
+            return modifier;
+        }
+    );
+    const modToString = (modifier) =>
+        modifier >= 0 ? `+${modifier}` : `${modifier}`;
     const dialog = new Dialog({
         title: `${weapon} Strike`,
         content: `
-            <b><i class="fas fa-${effect.icon}"></i> ${effect.name}:</b> ${effect.description}<hr>
+            <b><i class="fas fa-${effect.icon}"></i> ${effect.name}:</b> ${
+            effect.description
+        }<hr>
             <div class="dialog-buttons">
                 <button
                     class="dialog-button first"
@@ -77,7 +83,9 @@ const effect = {
         `,
         buttons: {
             firstWithEffect: {
-                label: `<i class="fas fa-${effect.icon}"></i> 1st (${modToString(
+                label: `<i class="fas fa-${
+                    effect.icon
+                }"></i> 1st (${modToString(
                     modifiers[0] + effect.modifier.value
                 )})`,
                 callback: () => {
@@ -85,7 +93,9 @@ const effect = {
                 },
             },
             secondWithEffect: {
-                label: `<i class="fas fa-${effect.icon}"></i> 2nd (${modToString(
+                label: `<i class="fas fa-${
+                    effect.icon
+                }"></i> 2nd (${modToString(
                     modifiers[1] + effect.modifier.value
                 )})`,
                 callback: () => {
@@ -93,7 +103,9 @@ const effect = {
                 },
             },
             thirdWithEffect: {
-                label: `<i class="fas fa-${effect.icon}"></i> 3rd (${modToString(
+                label: `<i class="fas fa-${
+                    effect.icon
+                }"></i> 3rd (${modToString(
                     modifiers[2] + effect.modifier.value
                 )})`,
                 callback: () => {
