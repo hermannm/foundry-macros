@@ -1,4 +1,12 @@
-const weapon = "Retribution Axe";
+const weapon = {
+    name: "Retribution Axe",
+    damageType: "Slashing",
+    criticalSpecialization: {
+        group: "Axe",
+        description:
+            "Choose one creature adjacent to the initial target and within reach. If its AC is lower than your attack roll result for the critical hit, you deal damage to that creature equal to the result of the weapon damage die you rolled (including extra dice for its potency rune, if any). This amount isn’t doubled, and no bonuses or other additional dice apply to this damage.",
+    },
+};
 const effect = {
     name: "Retribution",
     description:
@@ -10,25 +18,17 @@ const effect = {
         type: "circumstance",
     },
 };
-const criticalSpecialization = (roll) => {
-    const parts = [];
-    for (const term of roll.terms) {
-        if (term?.results) {
-            for (const result of term.results) {
-                parts.push(result.result);
-            }
-        }
-    }
+const criticalSpecialization = (rollData) => {
     DicePF2e.damageRoll({
         event,
-        parts,
+        parts: rollData.diceResults[weapon.damageType.toLowerCase()].physical,
         actor,
         data: actor.data.data,
         title: `
             <div style="line-height:133%">
-                <b>Critical Specialization</b> (Axe)
+                <b>Critical Specialization</b> (${weapon.criticalSpecialization.group})
                 <br>
-                Choose one creature adjacent to the initial target and within reach. If its AC is lower than your attack roll result for the critical hit, you deal damage to that creature equal to the result of the weapon damage die you rolled (including extra dice for its potency rune, if any). This amount isn’t doubled, and no bonuses or other additional dice apply to this damage.
+                ${weapon.criticalSpecialization.description}
             </div>
         `,
         speaker: ChatMessage.getSpeaker(),
@@ -38,7 +38,7 @@ const criticalSpecialization = (roll) => {
     const damage = (crit) => {
         const strikeItem = (actor.data.data.actions ?? [])
             .filter((action) => action.type === "strike")
-            .find((strike) => strike.name === weapon);
+            .find((strike) => strike.name === weapon.name);
         if (crit) {
             strikeItem.critical(event, [], criticalSpecialization);
         } else {
@@ -53,13 +53,10 @@ const criticalSpecialization = (roll) => {
             effect.modifier.type
         );
         damage(crit);
-        await actor.removeCustomModifier(
-            effect.modifier.stat,
-            effect.name
-        );
+        await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     };
     const dialog = new Dialog({
-        title: `${weapon} Damage`,
+        title: `${weapon.name} Damage`,
         content: `
             <b><i class="fas fa-${effect.icon}"></i> ${effect.name}:</b> ${effect.description}<hr>
             <div class="dialog-buttons">
