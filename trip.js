@@ -102,41 +102,65 @@ const action = {
                 });
             }
         });
-
     };
-    const skillRollWithitem = async () => {
-        let potency = 0;
-        actor.data.items.filter(w => w.type === "weapon" && w.data.equipped?.value === true && w.data.traits.value?.some(t => t === action.name.toLowerCase())).forEach(t => potency = (potency >= parseInt(t.data.potencyRune.value))? potency : parseInt(t.data.potencyRune.value));
-        if (potency >= 1) { // to filter +null
+    const attackRoll = async (MAP) => {
+        const weapon = actor.data.items
+            .filter(
+                (item) =>
+                    item.type === "weapon" &&
+                    item.data.equipped?.value === true &&
+                    item.data.traits.value?.some(
+                        (trait) => trait === action.name.toLowerCase()
+                    )
+            )
+            .reduce(
+                (item1, item2) =>
+                    (item1?.data.potencyRune?.value ?? 0) >
+                    (item2?.data.potencyRune?.value ?? 0)
+                        ? item1
+                        : item2,
+                null
+            );
+        const potency = parseInt(weapon?.data.potencyRune?.value) ?? 0;
+        const agile =
+            action.attack === "agile" ||
+            (weapon?.data.traits.value?.some((trait) => trait === "agile") ??
+                false);
+        let penalty = 0;
+        if (MAP === 2) {
+            penalty = agile ? -4 : -5;
+        } else if (MAP === 3) {
+            penalty = agile ? -8 : -10;
+        }
+        if (potency) {
             await actor.addCustomModifier(
                 action.skill.toLowerCase(),
-                "WeaponPotency",
+                "Item Bonus",
                 potency,
                 "item"
             );
         }
+        if (penalty) {
+            await actor.addCustomModifier(
+                action.skill.toLowerCase(),
+                "Multiple Attack Penalty",
+                penalty,
+                "untyped"
+            );
+        }
         skillRoll();
-        await actor.removeCustomModifier(
-            action.skill.toLowerCase(),
-            "WeaponPotency"
-        );
-        await actor.removeCustomModifier(
-            action.skill.toLowerCase(),
-            "Multiple Attack Penalty"
-        );
-    };
-    const skillRollWithMAP = async (penalty) => {
-        await actor.addCustomModifier(
-            action.skill.toLowerCase(),
-            "Multiple Attack Penalty",
-            penalty,
-            "untyped"
-        );
-        skillRollWithitem();
-        await actor.removeCustomModifier(
-            action.skill.toLowerCase(),
-            "Multiple Attack Penalty"
-        );
+        if (potency) {
+            await actor.removeCustomModifier(
+                action.skill.toLowerCase(),
+                "Item Bonus"
+            );
+        }
+        if (penalty) {
+            await actor.removeCustomModifier(
+                action.skill.toLowerCase(),
+                "Multiple Attack Penalty"
+            );
+        }
     };
     if (action.attack) {
         new Dialog({
@@ -152,24 +176,26 @@ const action = {
             buttons: {
                 first: {
                     label: "1st attack",
-                    callback: skillRollWithitem
+                    callback: () => {
+                        attackRoll(1);
+                    },
                 },
                 second: {
                     label: "2nd attack",
                     callback: () => {
-                        skillRollWithMAP(action.attack === "agile" ? -4 : -5);
+                        attackRoll(2);
                     },
                 },
                 third: {
                     label: "3rd attack",
                     callback: () => {
-                        skillRollWithMAP(action.attack === "agile" ? -8 : -10);
+                        attackRoll(3);
                     },
                 },
             },
             default: "first",
         }).render(true);
     } else {
-        skillRollWithitem();
+        skillRoll();
     }
 })();
