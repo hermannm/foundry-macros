@@ -23,12 +23,14 @@ const action = {
             )[0]
         ];
     const skillRoll = () => {
-        const options = actor.getRollOptions([
-            "all",
-            "skill-check",
-            action.skill.toLowerCase(),
-        ]);
-        options.push(action.name.toLowerCase());
+        const options = [
+            ...actor.getRollOptions([
+                "all",
+                "skill-check",
+                action.skill.toLowerCase(),
+            ]),
+            action.name.toLowerCase(),
+        ];
         if (action.attack) {
             options.push("attack");
         }

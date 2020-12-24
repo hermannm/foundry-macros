@@ -14,11 +14,14 @@ const action = {
                 (entry) => entry[1].name === action.skill.toLowerCase()
             )[0]
         ];
-    const options = actor.getRollOptions([
-        "all",
-        "skill-check",
-        action.skill.toLowerCase(),
-    ]);
+    const options = [
+        ...actor.getRollOptions([
+            "all",
+            "skill-check",
+            action.skill.toLowerCase(),
+        ]),
+        action.name.toLowerCase(),
+    ];
     skill.roll(event, options, (roll) => {
         let resultMessage = `<hr /><h3>${action.name}</h3>`;
         let validTarget = false;
