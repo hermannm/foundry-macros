@@ -2,7 +2,7 @@ const action = {
   name: "Grapple",
   skill: "Athletics",
   targetDC: "Fortitude",
-  actions: "OneAction", // OneAction/TwoAction/ThreeAction/FreeAction/Reaction/Passive
+  actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
   requirements:
     "You have at least one free hand or have your target grappled or restrained. Your target isn’t more than one size larger than you.",
   description:

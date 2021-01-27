@@ -2,7 +2,7 @@ const action = {
   name: "Shove",
   skill: "Athletics",
   targetDC: "Fortitude",
-  actions: "OneAction", // OneAction/TwoAction/ThreeAction/FreeAction/Reaction/Passive
+  actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
   requirements:
     "You have at least one hand free. The target can’t be more than one size larger than you.",
   description:
