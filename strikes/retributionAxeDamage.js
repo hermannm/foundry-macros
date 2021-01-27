@@ -60,13 +60,14 @@ const criticalSpecialization = (rollData) => {
 };
 (async () => {
   const damage = (crit) => {
+    const options = actor.getRollOptions(['all','str-based','damage'])
     const strikeItem = (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
       .find((strike) => strike.name === weapon.name);
     if (crit) {
-      strikeItem.critical(event, [], criticalSpecialization);
+      strikeItem.critical(event, options, criticalSpecialization);
     } else {
-      strikeItem.damage(event);
+      strikeItem.damage(event, options);
     }
   };
   const damageWithEffect = async (crit) => {
