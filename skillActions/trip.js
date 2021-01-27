@@ -63,11 +63,15 @@ const action = {
         if (dc) {
           validTarget = true;
           resultMessage += `<hr /><b>${target.name}:</b>`;
-          const legalSize =
-            action.maxSize >=
-            sizeArray.indexOf(target.actor?.data?.data?.traits?.size?.value) -
-              characterSizeIndex;
-          if (legalSize) {
+          if (
+            action.maxSize
+              ? action.maxSize >=
+                sizeArray.indexOf(
+                  target.actor?.data?.data?.traits?.size?.value
+                ) -
+                  characterSizeIndex
+              : true
+          ) {
             let successStep =
               roll.total >= dc
                 ? roll.total >= dc + 10
