@@ -3,6 +3,7 @@ const action = {
   actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
   save: "Basic Reflex",
   DC: "Class DC",
+  damageType: "Cold",
   description:
     "You breathe deeply and exhale powerful energy in a 30-foot cone or 60-foot line, dealing 1d6 damage per level. The area and damage type match those of your dragon (see Table 3–4 on page 86). If you used this ability in the last hour, the area and the damage are halved (15-foot cone or 30-foot line; 1d6 damage for every 2 levels). Each creature in the area must attempt a basic Reflex save.",
   tags: ["Arcane", "Barbarian", "Concentrate", "Evocation", "Instinct", "Rage"],
@@ -27,7 +28,7 @@ const action = {
   const damage = (dice, area) => {
     DicePF2e.damageRoll({
       event,
-      parts: [`${dice}d6`],
+      parts: [`${dice}d6${action.damageType ? `[${action.damageType}]` : ""}`],
       actor,
       data: actor.data.data,
       title: `
