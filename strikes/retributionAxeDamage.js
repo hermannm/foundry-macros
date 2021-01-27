@@ -25,11 +25,35 @@ const criticalSpecialization = (rollData) => {
     actor,
     data: actor.data.data,
     title: `
-      <div style="line-height:133%">
-        <b>Critical Specialization</b> (${weapon.criticalSpecialization.group})
-        <br>
-        ${weapon.criticalSpecialization.description}
+      <hr style="margin-top: 0;" />
+      <div style="
+        font-size: 14px;
+        color: #191813;
+        font-style: normal;
+      ">
+        <header style="display: flex;">
+          <img
+            style="flex: 0 0 36px; margin-right: 5px;"
+            src="systems/pf2e/icons/actions/Passive.png"
+            title="Critical Specialization"
+            width="36"
+            height="36"
+          >
+          <h3
+            style="flex: 1; line-height: 36px; margin: 0;"
+          >
+            Critical Specialization (${weapon.criticalSpecialization.group})
+          </h3>
+        </header>
+        <hr />
+        <div style="
+          font-weight: 500;
+          line-height: 16.8px;
+        ">
+          ${weapon.criticalSpecialization.description}
+        </div>
       </div>
+      <hr />
     `,
     speaker: ChatMessage.getSpeaker(),
   });
