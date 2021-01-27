@@ -1,6 +1,6 @@
 const action = {
   name: "Dragon's Rage Breath",
-  actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+  actions: "2", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
   save: "Basic Reflex",
   DC: "Class DC",
   damageType: "Cold",
@@ -11,13 +11,7 @@ const action = {
 (async () => {
   const actionHeader = `
     <header style="display: flex; font-size: 14px;">
-      <img
-        style="flex: 0 0 36px; margin-right: 5px;"
-        src="systems/pf2e/icons/actions/${action.actions}.png"
-        title="${action.name}"
-        width="36"
-        height="36"
-      >
+      <span style="font-family: 'Pathfinder2eActions'; font-size: 5em; text-align: center;">${action.actions}</span>
       <h3
         style="flex: 1; line-height: 36px; margin: 0;"
       >
