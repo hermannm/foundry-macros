@@ -60,7 +60,7 @@ const criticalSpecialization = (rollData) => {
 };
 (async () => {
   const damage = (crit) => {
-    const options = actor.getRollOptions(['all','str-based','damage'])
+    const options = actor.getRollOptions(["all", "str-based", "damage"]);
     const strikeItem = (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
       .find((strike) => strike.name === weapon.name);
