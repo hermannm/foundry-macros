@@ -25,10 +25,10 @@ const action = {
       </h3>
     </header>
   `;
-  const damage = (dice, area) => {
+  const damage = (damage, area) => {
     DicePF2e.damageRoll({
       event,
-      parts: [`${dice}d6${action.damageType ? `[${action.damageType}]` : ""}`],
+      parts: [`${damage}${action.damageType ? `[${action.damageType}]` : ""}`],
       actor,
       data: actor.data.data,
       title: `
@@ -36,7 +36,7 @@ const action = {
         <div style="
           color: #191813;
           font-style: normal;
-          line-height: 120%;
+          line-height: 16.8px;
         ">
           ${actionHeader}
           <hr />
@@ -58,6 +58,7 @@ const action = {
             font-weight: 500;
             font-size: 14px;
           ">
+            ${action.trigger ? `<b>Trigger:</b> ${action.trigger}<hr />` : ""}
             ${action.description ? `${action.description}<hr />` : ""}
             ${
               area || action.save
@@ -95,12 +96,13 @@ const action = {
       ${actionHeader}
       <hr />
       ${action.description ? `${action.description}<hr />` : ""}
+      ${action.trigger ? `<b>Trigger:</b> ${action.trigger}<hr />` : ""}
     `,
     buttons: {
       standard: {
         label: "Standard",
         callback: () => {
-          damage(actor.data.data.details?.level?.value, "30-foot cone");
+          damage(`${actor.data.data.details?.level?.value}d6`, "30-foot cone");
         },
       },
       hour: {

@@ -1,7 +1,6 @@
 const action = {
   name: "Retributive Strike",
   actions: "Reaction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-  damageType: "Resistance",
   trigger: "An enemy damages your ally, and both are within 15 feet of you.",
   description:
     "You protect your ally and strike your foe. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the foe is within reach, make a melee Strike against it.",
@@ -24,10 +23,10 @@ const action = {
       </h3>
     </header>
   `;
-  const damage = (level, area) => {
+  const damage = (damage, area) => {
     DicePF2e.damageRoll({
       event,
-      parts: [`2+${level}`],
+      parts: [`${damage}${action.damageType ? `[${action.damageType}]` : ""}`],
       actor,
       data: actor.data.data,
       title: `
@@ -89,22 +88,5 @@ const action = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
-  const dialog = new Dialog({
-    title: " ",
-    content: `
-      ${actionHeader}
-      <hr />
-      ${action.description ? `${action.description}<hr />` : ""}
-    `,
-    buttons: {
-      standard: {
-        label: "Standard",
-        callback: () => {
-          damage(actor.data.data.details?.level?.value);
-        },
-      },
-    },
-    default: "standard",
-  });
-  dialog.render(true);
+  damage(`2+${actor.data.data.details?.level?.value}`);
 })();
