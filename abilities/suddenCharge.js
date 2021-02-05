@@ -111,17 +111,7 @@ const action = {
       ...(action.tags ? action.tags.map((tag) => slugify(tag)) : []),
       ...[`action:${slugify(action.name)}`],
     ];
-    switch (MAP) {
-      case 1:
-        strikeItem.attack({ event, options });
-        break;
-      case 2:
-        strikeItem.variants[1]?.roll({ event, options });
-        break;
-      case 3:
-        strikeItem.variants[2]?.roll({ event, options });
-        break;
-    }
+    strikeItem.variants[MAP].roll({ event, options });
   };
   const modifiers = strikeItem.variants.map((variant) => {
     let modifier = strikeItem.totalModifier;
@@ -145,7 +135,7 @@ const action = {
     dialog.data.buttons.first = {
       label: `1st (${modToString(modifiers[0])})`,
       callback: () => {
-        strike(1);
+        strike(0);
       },
     };
     dialog.data.default = "first";
@@ -161,7 +151,7 @@ const action = {
     dialog.data.buttons.second = {
       label: `2nd (${modToString(modifiers[1])})`,
       callback: () => {
-        strike(2);
+        strike(1);
       },
     };
     if (!includeFirst) {
@@ -180,7 +170,7 @@ const action = {
     dialog.data.buttons.third = {
       label: `3rd (${modToString(modifiers[2])})`,
       callback: () => {
-        strike(3);
+        strike(2);
       },
     };
   }
