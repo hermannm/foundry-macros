@@ -1,7 +1,7 @@
 const weapon = {
   name: "Halberd",
   damageTypes: ["Piercing", "Slashing"],
-  tags: ["Attack", "Polearm", "Reach", "Versatile S"],
+  tags: ["Attack", "Reach", "Versatile S"],
   description: [
     "This polearm has a relatively short, 5-foot shaft. The business end is a long spike with an axe blade attached.",
     {
@@ -17,12 +17,6 @@ const weapon = {
   },
 };
 (async () => {
-  const strikeItem = (actor.data.data.actions ?? [])
-    .filter((action) => action.type === "strike")
-    .find((strike) => strike.name === weapon.name);
-  const shortDamageTypes = weapon.damageTypes.map((damageType) =>
-    damageType.charAt(0).toLowerCase()
-  );
   const actionFormat = ({ actions, name, tags, content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
@@ -71,40 +65,43 @@ const weapon = {
       </div>
     `;
   };
+  const slugify = (string) =>
+    // borrowed from https://gist.github.com/codeguy/6684588
+    string
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  const strikeItem = (actor.data.data.actions ?? [])
+    .filter((action) => action.type === "strike")
+    .find((strike) => strike.name === weapon.name);
+  const shortDamageTypes = weapon.damageTypes.map((damageType) =>
+    damageType.charAt(0).toLowerCase()
+  );
   const strike = (MAP) => {
+    const options = [
+      ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
+      ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
+    ];
     switch (MAP) {
       case 1:
-        strikeItem.attack(event);
+        strikeItem.attack({ event, options });
         break;
       case 2:
-        strikeItem.variants[1]?.roll(event);
+        strikeItem.variants[1]?.roll({ event, options });
         break;
       case 3:
-        strikeItem.variants[2]?.roll(event);
+        strikeItem.variants[2]?.roll({ event, options });
         break;
     }
   };
   const damage = ({ crit, type }) => {
-    let options = actor.getRollOptions([
-      "all",
-      "str-based",
-      "damage",
-      "damage-roll",
-    ]);
-    if (type !== shortDamageTypes[0]) {
-      if (!options.includes(`versatile-${type}`)) {
-        options.push(`versatile-${type}`);
-      }
-      for (const damageType of shortDamageTypes) {
-        if (damageType !== type) {
-          if (options.includes(`versatile-${damageType}`)) {
-            options = options.filter(
-              (option) => option !== `versatile-${damageType}`
-            );
-          }
-        }
-      }
-    }
+    const options = [
+      ...actor.getRollOptions(["all", "str-based", "damage", "damage-roll"]),
+      ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []).filter(
+        (tag) => !tag.startsWith("versatile") || tag.slice(-1) === type
+      ),
+    ];
     // temporary fix until versatile is fixed
     const versatileTrait = strikeItem.traits.find(
       (trait) =>
@@ -117,22 +114,26 @@ const weapon = {
     }
     //
     if (crit) {
-      strikeItem.critical(event, options, (rollData) => {
-        if (weapon.criticalSpecialization) {
-          ChatMessage.create({
-            user: game.user._id,
-            speaker: ChatMessage.getSpeaker(),
-            content: actionFormat({
-              actions: "Passive",
-              name: `Critical Specialization`,
-              tags: [weapon.criticalSpecialization.group],
-              content: [weapon.criticalSpecialization.description],
-            }),
-          });
-        }
+      strikeItem.critical({
+        event,
+        options,
+        callback: () => {
+          if (weapon.criticalSpecialization) {
+            ChatMessage.create({
+              user: game.user._id,
+              speaker: ChatMessage.getSpeaker(),
+              content: actionFormat({
+                actions: "Passive",
+                name: `Critical Specialization`,
+                tags: [weapon.criticalSpecialization.group],
+                content: [weapon.criticalSpecialization.description],
+              }),
+            });
+          }
+        },
       });
     } else {
-      strikeItem.damage(event, options);
+      strikeItem.damage({ event, options });
     }
     if (versatileTrait) {
       strikeItem.traits.find(

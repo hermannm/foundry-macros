@@ -88,10 +88,16 @@ const action = {
         : []),
     ],
   });
-  const strikeItem = () =>
-    (actor.data.data.actions ?? [])
-      .filter((action) => action.type === "strike")
-      .find((strike) => strike.name === weapon);
+  const slugify = (string) =>
+    // borrowed from https://gist.github.com/codeguy/6684588
+    string
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  const strikeItem = (actor.data.data.actions ?? [])
+    .filter((action) => action.type === "strike")
+    .find((strike) => strike.name === weapon);
   const strike = (MAP) => {
     ChatMessage.create({
       user: game.user._id,
@@ -101,20 +107,25 @@ const action = {
         ${format}
       `,
     });
+    const options = [
+      ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
+      ...(action.tags ? action.tags.map((tag) => slugify(tag)) : []),
+      ...[`action:${slugify(action.name)}`],
+    ];
     switch (MAP) {
       case 1:
-        strikeItem().attack(event);
+        strikeItem.attack({ event, options });
         break;
       case 2:
-        strikeItem().variants[1]?.roll(event);
+        strikeItem.variants[1]?.roll({ event, options });
         break;
       case 3:
-        strikeItem().variants[2]?.roll(event);
+        strikeItem.variants[2]?.roll({ event, options });
         break;
     }
   };
-  const modifiers = strikeItem().variants.map((variant) => {
-    let modifier = strikeItem().totalModifier;
+  const modifiers = strikeItem.variants.map((variant) => {
+    let modifier = strikeItem.totalModifier;
     const splitLabel = variant.label.split(" ");
     if (splitLabel[0] === "MAP") {
       modifier += parseInt(splitLabel[1]);
