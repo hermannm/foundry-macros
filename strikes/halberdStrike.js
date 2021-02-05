@@ -17,7 +17,6 @@ const weapon = {
   const shortDamageTypes = weapon.damageTypes.map((damageType) =>
     damageType.charAt(0).toLowerCase()
   );
-  console.log(shortDamageTypes);
   const actionFormat = ({ actions, name, tags, content }) => `
     <header style="display: flex; font-size: 14px">
       <img
@@ -77,7 +76,7 @@ const weapon = {
         options.push(`versatile-${type}`);
       }
       for (const damageType of shortDamageTypes) {
-        if (type !== damageType) {
+        if (damageType !== type) {
           if (options.includes(`versatile-${damageType}`)) {
             options = options.filter(
               (option) => option !== `versatile-${damageType}`
@@ -119,7 +118,6 @@ const weapon = {
       strikeItem.traits.find(
         (trait) => trait.name === `not-${versatileTrait}`
       ).name = versatileTrait;
-      console.log(strikeItem);
     }
   };
   const modifiers = strikeItem.variants.map((variant) => {
@@ -215,7 +213,7 @@ const weapon = {
     dialog.data.buttons[`critical-${damageType}`] = {
       label: "💥",
       callback: () => {
-        damage(true, damageType);
+        damage({ crit: true, type: damageType });
       },
     };
   }
@@ -223,7 +221,7 @@ const weapon = {
   for (const damageType of shortDamageTypes) {
     dialog.data.buttons[`damage-${damageType}`] = {
       callback: () => {
-        damage(false, damageType);
+        damage({ crit: false, type: damageType });
       },
     };
   }
