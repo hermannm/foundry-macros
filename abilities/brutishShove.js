@@ -6,50 +6,41 @@ const action = {
   requirements: "You are wielding a two-handed melee weapon.",
   description: [
     "Throwing your weight behind your attack, you hit your opponent hard enough to make it stumble back. Make a Strike with a two-handed melee weapon. If you hit a target that is up to two sizes larger than you, that creature is flat-footed until the end of your current turn, and you can automatically Shove it, with the same benefits as the Shove action (including the critical success effect, if your Strike was a critical hit). If you move to follow the target, your movement doesn’t trigger reactions.",
-    "If the target has to stop moving because it would hit an object, it takes damage equal to your Strength modifier (minimum 1).",
+    {
+      title: "Powerful Shove",
+      text:
+        "When a creature you Shove has to stop moving because it would hit an object, it takes damage equal to your Strength modifier (minimum 1). This happens regardless of how you Shoved the creature.",
+    },
   ],
   failure: "The target becomes flat-footed until the end of your current turn.",
 };
 (async () => {
-  const actionContent = [];
-  if (action.trigger) {
-    actionContent.push(`<strong>Trigger</strong> ${action.trigger}`);
-  }
-  if (action.requirements) {
-    actionContent.push(`<strong>Requirements</strong> ${action.requirements}`);
-  }
-  if (action.description) {
-    if (Array.isArray(action.description)) {
-      actionContent.push(
-        action.description.join(`<div style="height: 5px"></div>`)
-      );
-    } else {
-      actionContent.push(action.description);
-    }
-  }
-  if (action.failure) {
-    actionContent.push(`<strong>Failure</strong> ${action.failure}`);
-  }
-  const actionFormat = `
-    <header style="display: flex;">
-      <img
-        style="flex: 0 0 36px; margin-right: 5px;"
-        src="systems/pf2e/icons/actions/${action.actions}.png"
-        title="${action.name}"
-        width="36"
-        height="36"
-      >
-      <h3 style="flex: 1; line-height: 36px; margin: 0;">
-        ${action.name}
-      </h3>
-    </header>
-    <div style="font-weight: 500; font-size: 14px;">
+  const actionFormat = ({ actions, name, tags, content }) => {
+    const checkTitle = (paragraph) =>
+      typeof paragraph === "object"
+        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
+        : paragraph;
+    return `
+      <header style="display: flex; font-size: 14px">
+        <img
+          style="flex: 0 0 36px; margin-right: 5px;"
+          src="systems/pf2e/icons/actions/${actions}.png"
+          title="${name}"
+          width="36"
+          height="36"
+        >
+        <h3 style="flex: 1; line-height: 36px; margin: 0;">
+          ${name}
+        </h3>
+      </header>
       ${
-        action.tags
+        tags
           ? `
             <hr style="margin-top: 3px; margin-bottom: 1px;" />
-            <div class="tags" style="margin-bottom: 5px;">
-              ${action.tags
+            <div class="tags" style="
+              margin-bottom: 5px;
+            ">
+              ${tags
                 .map(
                   (tag) => `
                     <span class="tag tag_alt"">${tag}</span>`
@@ -57,13 +48,53 @@ const action = {
                 .join(" ")}
             </div>
           `
-          : actionContent.length === 0
-          ? ""
           : `<hr style="margin-top: 3px;" />`
       }
-      ${actionContent.join("<hr />")}
-    </div>
-  `;
+      <div style="font-weight: 500; font-size: 14px;">
+        ${content
+          .map((paragraph) =>
+            Array.isArray(paragraph)
+              ? paragraph
+                  .map((subParagraph) => checkTitle(subParagraph))
+                  .join(`<div style="margin-bottom: 5px;"></div>`)
+              : checkTitle(paragraph)
+          )
+          .join("<hr />")}
+      </div>
+    `;
+  };
+  const format = actionFormat({
+    actions: action.actions,
+    name: action.name,
+    tags: action.tags,
+    content: [
+      ...(action.trigger
+        ? [
+            {
+              title: "Trigger",
+              text: action.trigger,
+            },
+          ]
+        : []),
+      ...(action.requirements
+        ? [
+            {
+              title: "Requirements",
+              text: action.requirements,
+            },
+          ]
+        : []),
+      ...(action.description ? [action.description] : []),
+      ...(action.failure
+        ? [
+            {
+              title: "Failure",
+              text: action.failure,
+            },
+          ]
+        : []),
+    ],
+  });
   const strikeItem = () =>
     (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
@@ -72,7 +103,10 @@ const action = {
     ChatMessage.create({
       user: game.user._id,
       speaker: ChatMessage.getSpeaker(),
-      content: `<hr style="margin-top: 0; margin-bottom: 3px;" />${actionFormat}`,
+      content: `
+        <hr style="margin-top: 0; margin-bottom: 3px;" />
+        ${format}
+      `,
     });
     switch (MAP) {
       case 1:
@@ -98,7 +132,7 @@ const action = {
     modifier >= 0 ? `+${modifier}` : `${modifier}`;
   const dialog = new Dialog({
     title: " ",
-    content: `${actionFormat}<hr/>`,
+    content: `${format}<hr/>`,
     buttons: {},
   });
   const includeFirst =

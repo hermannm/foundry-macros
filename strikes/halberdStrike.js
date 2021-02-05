@@ -2,8 +2,14 @@ const weapon = {
   name: "Halberd",
   damageTypes: ["Piercing", "Slashing"],
   tags: ["Attack", "Polearm", "Reach", "Versatile S"],
-  description:
+  description: [
     "This polearm has a relatively short, 5-foot shaft. The business end is a long spike with an axe blade attached.",
+    {
+      title: "Versatile",
+      text:
+        "A versatile weapon can be used to deal a different type of damage than that listed in the Damage entry. You choose the damage type each time you make an attack.",
+    },
+  ],
   criticalSpecialization: {
     group: "Polearm",
     description:
@@ -17,40 +23,54 @@ const weapon = {
   const shortDamageTypes = weapon.damageTypes.map((damageType) =>
     damageType.charAt(0).toLowerCase()
   );
-  const actionFormat = ({ actions, name, tags, content }) => `
-    <header style="display: flex; font-size: 14px">
-      <img
-        style="flex: 0 0 36px; margin-right: 5px;"
-        src="systems/pf2e/icons/actions/${actions}.png"
-        title="${name}"
-        width="36"
-        height="36"
-      >
-      <h3 style="flex: 1; line-height: 36px; margin: 0;">
-        ${name}
-      </h3>
-    </header>
-    ${
-      tags
-        ? `
-          <hr style="margin-top: 3px; margin-bottom: 1px;" />
-          <div class="tags" style="
-            margin-bottom: 5px;
-          ">
-            ${tags
-              .map(
-                (tag) => `
-                  <span class="tag tag_alt"">${tag}</span>`
-              )
-              .join(" ")}
-          </div>
-        `
-        : `<hr style="margin-top: 3px;" />`
-    }
-    <div style="font-weight: 500; font-size: 14px;">
-      ${content.join("<hr />")}
-    </div>
-  `;
+  const actionFormat = ({ actions, name, tags, content }) => {
+    const checkTitle = (paragraph) =>
+      typeof paragraph === "object"
+        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
+        : paragraph;
+    return `
+      <header style="display: flex; font-size: 14px">
+        <img
+          style="flex: 0 0 36px; margin-right: 5px;"
+          src="systems/pf2e/icons/actions/${actions}.png"
+          title="${name}"
+          width="36"
+          height="36"
+        >
+        <h3 style="flex: 1; line-height: 36px; margin: 0;">
+          ${name}
+        </h3>
+      </header>
+      ${
+        tags
+          ? `
+            <hr style="margin-top: 3px; margin-bottom: 1px;" />
+            <div class="tags" style="
+              margin-bottom: 5px;
+            ">
+              ${tags
+                .map(
+                  (tag) => `
+                    <span class="tag tag_alt"">${tag}</span>`
+                )
+                .join(" ")}
+            </div>
+          `
+          : `<hr style="margin-top: 3px;" />`
+      }
+      <div style="font-weight: 500; font-size: 14px;">
+        ${content
+          .map((paragraph) =>
+            Array.isArray(paragraph)
+              ? paragraph
+                  .map((subParagraph) => checkTitle(subParagraph))
+                  .join(`<div style="margin-bottom: 5px;"></div>`)
+              : checkTitle(paragraph)
+          )
+          .join("<hr />")}
+      </div>
+    `;
+  };
   const strike = (MAP) => {
     switch (MAP) {
       case 1:
@@ -139,11 +159,12 @@ const weapon = {
         tags: weapon.tags,
         content: [
           [
-            weapon.description,
-            "<strong>Versatile </strong> A versatile weapon can be used to deal a different type of damage than that listed in the Damage entry. You choose the damage type each time you make an attack.",
-            `<strong>Critical Specialization</strong>
-             ${weapon.criticalSpecialization.description}`,
-          ].join(`<div style="margin-bottom: 5px;"></div>`),
+            ...weapon.description,
+            {
+              title: "Critical Specialization",
+              text: weapon.criticalSpecialization.description,
+            },
+          ],
         ],
       })}
       <div class="dialog-buttons" style="margin-top: 5px;">
