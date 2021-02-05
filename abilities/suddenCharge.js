@@ -139,7 +139,13 @@ const action = {
     };
     dialog.data.default = "first";
   }
-  if (action.actions !== "ThreeActions" && action.actions !== "Reaction") {
+  if (
+    !(
+      action.actions === "ThreeActions" ||
+      action.actions === "Reaction" ||
+      (action.tags ?? []).includes("Open")
+    )
+  ) {
     dialog.data.buttons.second = {};
     dialog.data.buttons.second = {
       label: `2nd (${modToString(modifiers[1])})`,
@@ -152,9 +158,12 @@ const action = {
     }
   }
   if (
-    action.actions !== "TwoActions" &&
-    action.actions !== "ThreeActions" &&
-    action.actions !== "Reaction"
+    !(
+      action.actions === "TwoActions" ||
+      action.actions === "ThreeActions" ||
+      action.actions === "Reaction" ||
+      (action.tags ?? []).includes("Open")
+    )
   ) {
     dialog.data.buttons.third = {};
     dialog.data.buttons.third = {
