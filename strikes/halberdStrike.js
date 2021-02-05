@@ -75,31 +75,18 @@ const weapon = {
   const strikeItem = (actor.data.data.actions ?? [])
     .filter((action) => action.type === "strike")
     .find((strike) => strike.name === weapon.name);
-  const shortDamageTypes = weapon.damageTypes.map((damageType) =>
-    damageType.charAt(0).toLowerCase()
-  );
   const strike = (MAP) => {
     const options = [
       ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
       ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
     ];
-    switch (MAP) {
-      case 1:
-        strikeItem.attack({ event, options });
-        break;
-      case 2:
-        strikeItem.variants[1]?.roll({ event, options });
-        break;
-      case 3:
-        strikeItem.variants[2]?.roll({ event, options });
-        break;
-    }
+    strikeItem.variants[MAP].roll({ event, options });
   };
-  const damage = ({ crit, type }) => {
+  const damage = ({ crit, damageType }) => {
     const options = [
       ...actor.getRollOptions(["all", "str-based", "damage", "damage-roll"]),
       ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []).filter(
-        (tag) => !tag.startsWith("versatile") || tag.slice(-1) === type
+        (tag) => !tag.startsWith("versatile") || tag.slice(-1) === damageType
       ),
     ];
     // temporary fix until versatile is fixed
@@ -169,99 +156,111 @@ const weapon = {
         ],
       })}
       <div class="dialog-buttons" style="margin-top: 5px;">
-        <button
-          class="dialog-button firstStrike"
-          data-button="firstStrike"
-          style="margin-bottom:5px;"
-        >
-          1st (${modToString(modifiers[0])})
-        </button>
-        <button
-          class="dialog-button secondStrike"
-          data-button="secondStrike"
-          style="margin-bottom:5px;"
-        >
-          2nd (${modToString(modifiers[1])})
-        </button>
-        <button
-          class="dialog-button thirdStrike"
-          data-button="thirdStrike"
-          style="margin-bottom:5px;"
-        >
-          3rd (${modToString(modifiers[2])})
-        </button>
-      </div>
-      <hr />
-      <div style="
-        display: flex;
-        justify-content: center;
-        margin-bottom: 5px;
-      "><strong>Damage</strong></div>
-      <div style="
-        display: flex;
-        margin-top: 5px;
-      ">
-        ${weapon.damageTypes
+        ${["1st", "2nd", "3rd"]
           .map(
-            (damageType) => `
-              <div style="
-                flex-basis: 50%;
-                display: flex;
-                justify-content: center;
-              ">
-                <strong>${damageType}</strong>
-              </div>
-            `
+            (buttonText, index) => `
+            <button
+              class="dialog-button strike${index}"
+              data-button="strike${index}"
+              style="margin-bottom:5px;"
+            >
+              ${buttonText} (${modToString(modifiers[index])})
+            </button>
+          `
           )
           .join("")}
       </div>
+      <hr />
+      ${weapon.damageTypes
+        .slice(0, -1)
+        .map(
+          (damageType) => `
+            <div style="
+              display: flex;
+              justify-content: center;
+              margin-bottom: 5px;
+            "><strong>${damageType}</strong></div>
+          `
+        )
+        .join("")}
       <div class="dialog-buttons">
-        ${shortDamageTypes
+        ${weapon.damageTypes
+          .slice(0, -1)
           .map(
             (damageType) => `
               <button
-                class="dialog-button damage-${damageType}"
-                data-button="damage-${damageType}"
+                class="dialog-button damage-${damageType.toLowerCase()}"
+                data-button="damage-${damageType.toLowerCase()}"
                 style="margin-bottom:5px;"
               >
                 ✔️
+              </button>
+              <button
+                class="dialog-button critical-${damageType.toLowerCase()}"
+                data-button="critical-${damageType.toLowerCase()}"
+                style="margin-bottom:5px;"
+              >
+                💥
               </button>
             `
           )
           .join("")}
       </div>
+      <div style="
+        display: flex;
+        justify-content: center;
+        margin-bottom: 5px;
+      "><strong>${
+        weapon.damageTypes[weapon.damageTypes.length - 1]
+      }</strong></div>
     `,
-    buttons: {},
+    buttons: {
+      [`damage-${weapon.damageTypes[
+        weapon.damageTypes.length - 1
+      ].toLowerCase()}`]: {
+        label: "✔️",
+        callback: () => {
+          damage({
+            crit: false,
+            damageType: weapon.damageTypes[weapon.damageTypes.length - 1]
+              .charAt(0)
+              .toLowerCase(),
+          });
+        },
+      },
+      [`critical-${weapon.damageTypes[
+        weapon.damageTypes.length - 1
+      ].toLowerCase()}`]: {
+        label: "💥",
+        callback: () => {
+          damage({
+            crit: true,
+            damageType: weapon.damageTypes[weapon.damageTypes.length - 1]
+              .charAt(0)
+              .toLowerCase(),
+          });
+        },
+      },
+    },
   });
-  for (const damageType of shortDamageTypes) {
-    dialog.data.buttons[`critical-${damageType}`] = {
-      label: "💥",
-      callback: () => {
-        damage({ crit: true, type: damageType });
-      },
-    };
-  }
   dialog.render(true);
-  for (const damageType of shortDamageTypes) {
-    dialog.data.buttons[`damage-${damageType}`] = {
+  for (const damageType of weapon.damageTypes.slice(0, -1)) {
+    dialog.data.buttons[`damage-${damageType.toLowerCase()}`] = {
       callback: () => {
-        damage({ crit: false, type: damageType });
+        damage({ crit: false, damageType: damageType.charAt(0).toLowerCase() });
+      },
+    };
+    dialog.data.buttons[`critical-${damageType.toLowerCase()}`] = {
+      callback: () => {
+        damage({ crit: true, damageType: damageType.charAt(0).toLowerCase() });
       },
     };
   }
-  dialog.data.buttons.firstStrike = {
-    callback: () => {
-      strike(1);
-    },
-  };
-  dialog.data.buttons.secondStrike = {
-    callback: () => {
-      strike(2);
-    },
-  };
-  dialog.data.buttons.thirdStrike = {
-    callback: () => {
-      strike(3);
-    },
-  };
+  for (let i = 0; i < 3; i++) {
+    dialog.data.buttons[`strike${i}`] = {
+      callback: () => {
+        strike(i);
+      },
+    };
+  }
 })();
