@@ -140,6 +140,7 @@ const weapon = {
         content: [
           [
             weapon.description,
+            "<strong>Versatile </strong> A versatile weapon can be used to deal a different type of damage than that listed in the Damage entry. You choose the damage type each time you make an attack.",
             `<strong>Critical Specialization</strong>
              ${weapon.criticalSpecialization.description}`,
           ].join(`<div style="margin-bottom: 5px;"></div>`),
@@ -169,10 +170,11 @@ const weapon = {
         </button>
       </div>
       <hr />
-      <div style="font-weight: 500; font-size: 14px;">
-        <strong>Versatile </strong>
-         A versatile weapon can be used to deal a different type of damage than that listed in the Damage entry. You choose the damage type each time you make an attack.
-      </div>
+      <div style="
+        display: flex;
+        justify-content: center;
+        margin-bottom: 5px;
+      "><strong>Damage</strong></div>
       <div style="
         display: flex;
         margin-top: 5px;
