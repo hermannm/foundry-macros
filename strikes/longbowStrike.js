@@ -7,12 +7,16 @@ const weapon = {
       title: "Range",
       text: "100 ft.",
     },
-    {
-      title: "Volley",
-      text:
-        "This ranged weapon is less effective at close distances. Your attacks against targets that are at a distance within the range listed take a –2 penalty.",
-    },
   ],
+  effect: {
+    name: "Volley 30 ft.",
+    description:
+      "This ranged weapon is less effective at close distances. Your attacks against targets that are at a distance within the range listed take a –2 penalty.",
+    modifier: {
+      stat: "attack",
+      value: -2,
+    },
+  },
 };
 (async () => {
   const actionFormat = ({ actions, name, tags, content }) => {
@@ -63,6 +67,27 @@ const weapon = {
       </div>
     `;
   };
+  const strikeButtonFormat = ({ id, modifiers }) => {
+    const buttonText = ["1st", "2nd", "3rd"];
+    return `
+      <div class="dialog-buttons" style="margin-top: 5px;">
+        ${modifiers
+          .map(
+            (modifier, index) => `
+            <button
+              class="dialog-button ${id}${index}"
+              data-button="${id}${index}"
+              style="margin-bottom:5px;"
+            >
+              ${buttonText[index]}
+               (${modifier >= 0 ? `+${modifier}` : `${modifier}`})
+            </button>
+          `
+          )
+          .join("")}
+      </div>
+    `;
+  };
   const slugify = (string) =>
     // borrowed from https://gist.github.com/codeguy/6684588
     string
@@ -70,25 +95,29 @@ const weapon = {
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
-  const strikeItem = (actor.data.data.actions ?? [])
-    .filter((action) => action.type === "strike")
-    .find((strike) => strike.name === weapon.name);
+  const strikeItem = () =>
+    (actor.data.data.actions ?? [])
+      .filter((action) => action.type === "strike")
+      .find((strike) => strike.name === weapon.name);
   const strike = (MAP) => {
     const options = [
       ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
       ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
     ];
-    switch (MAP) {
-      case 1:
-        strikeItem.attack({ event, options });
-        break;
-      case 2:
-        strikeItem.variants[1]?.roll({ event, options });
-        break;
-      case 3:
-        strikeItem.variants[2]?.roll({ event, options });
-        break;
-    }
+    strikeItem().variants[MAP].roll({ event, options });
+  };
+  const strikeWithEffect = async (MAP) => {
+    await actor.addCustomModifier(
+      weapon.effect.modifier.stat,
+      weapon.effect.name,
+      weapon.effect.modifier.value,
+      weapon.effect.modifier.type ?? "untyped"
+    );
+    strike(MAP);
+    await actor.removeCustomModifier(
+      weapon.effect.modifier.stat,
+      weapon.effect.name
+    );
   };
   const damage = ({ crit }) => {
     const options = [
@@ -96,21 +125,19 @@ const weapon = {
       ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
     ];
     if (crit) {
-      strikeItem.critical({ event, options });
+      strikeItem().critical({ event, options });
     } else {
-      strikeItem.damage({ event, options });
+      strikeItem().damage({ event, options });
     }
   };
-  const modifiers = strikeItem.variants.map((variant) => {
-    let modifier = strikeItem.totalModifier;
+  const modifiers = strikeItem().variants.map((variant) => {
+    let modifier = strikeItem().totalModifier;
     const splitLabel = variant.label.split(" ");
     if (splitLabel[0] === "MAP") {
       modifier += parseInt(splitLabel[1]);
     }
     return modifier;
   });
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
   const dialog = new Dialog({
     title: " ",
     content: `
@@ -120,29 +147,15 @@ const weapon = {
         tags: weapon.tags,
         content: [weapon.description],
       })}
-      <div class="dialog-buttons" style="margin-top: 5px;">
-        <button
-          class="dialog-button firstStrike"
-          data-button="firstStrike"
-          style="margin-bottom:5px;"
-        >
-          1st (${modToString(modifiers[0])})
-        </button>
-        <button
-          class="dialog-button secondStrike"
-          data-button="secondStrike"
-          style="margin-bottom:5px;"
-        >
-          2nd (${modToString(modifiers[1])})
-        </button>
-        <button
-          class="dialog-button thirdStrike"
-          data-button="thirdStrike"
-          style="margin-bottom:5px;"
-        >
-          3rd (${modToString(modifiers[2])})
-        </button>
-      </div>
+      ${strikeButtonFormat({ id: "strike", modifiers: modifiers })}
+      <hr />
+      <strong>${weapon.effect.name}</strong> ${weapon.effect.description}
+      ${strikeButtonFormat({
+        id: slugify(weapon.effect.name),
+        modifiers: modifiers.map(
+          (modifier) => modifier + weapon.effect.modifier.value
+        ),
+      })}
       <hr />
       <div style="
         display: flex;
@@ -166,19 +179,16 @@ const weapon = {
     },
   });
   dialog.render(true);
-  dialog.data.buttons.firstStrike = {
-    callback: () => {
-      strike(1);
-    },
-  };
-  dialog.data.buttons.secondStrike = {
-    callback: () => {
-      strike(2);
-    },
-  };
-  dialog.data.buttons.thirdStrike = {
-    callback: () => {
-      strike(3);
-    },
-  };
+  for (let i = 0; i < 3; i++) {
+    dialog.data.buttons[`strike${i}`] = {
+      callback: () => {
+        strike(i);
+      },
+    };
+    dialog.data.buttons[`${slugify(weapon.effect.name)}${i}`] = {
+      callback: () => {
+        strikeWithEffect(i);
+      },
+    };
+  }
 })();
