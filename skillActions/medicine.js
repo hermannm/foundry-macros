@@ -1,130 +1,138 @@
-const treatWounds = (godless) => ({
-  actions: "Passive",
-  name: "Treat Wounds",
-  tags: ["Exploration", "Healing", "Manipulate"],
-  content: [
-    {
-      title: "Requirements",
-      text:
-        "You are holding healer's tools, or you are wearing them and have a hand free.",
-    },
-    "You spend 10 minutes treating one injured living creature (targeting yourself, if you so choose).",
-    ...(godless
-      ? [
-          {
-            title: "Godless Healing",
-            text:
-              "You recover an additional 5 Hit Points from a successful attempt to Treat your Wounds.",
-          },
-        ]
-      : []),
-  ],
-});
-const battleMedicine = (godless) => ({
-  actions: "OneAction",
-  name: "Battle Medicine",
-  tags: ["Healing", "Manipulate"],
-  content: [
-    {
-      title: "Requirements",
-      text: "You are holding or wearing healer's tools.",
-    },
-    "You can patch up yourself or an adjacent ally, even in combat. Attempt a Medicine check with the same DC as for Treat Wounds, and restore a corresponding amount of Hit Points; this does not remove the wounded condition. The target is then temporarily immune to your Battle Medicine for 1 day.",
-    {
-      title: "Medic",
-      text:
-        "Once per day, you can use Battle Medicine on a creature that’s temporarily immune.",
-    },
-    {
-      title: "Doctor's Visitation (flourish)",
-      text: "Stride, then use Battle Medicine.",
-    },
-    ...(godless
-      ? [
-          {
-            title: "Godless Healing",
-            text:
-              "You recover an additional 5 Hit Points from a successful attempt to use Battle Medicine on you. After you or an ally use Battle Medicine on you, you become temporarily immune to that Battle Medicine for only 1 hour, instead of 1 day.",
-          },
-        ]
-      : []),
-  ],
-});
-const treatPoison = {
-  actions: "OneAction",
-  name: "Treat Poison",
-  tags: ["Manipulate"],
-  content: [
-    {
-      title: "Requirements",
-      text:
-        "You are holding healer's tools, or you are wearing them and have a hand free.",
-    },
-    [
-      "You treat a patient to prevent the spread of poison. Attempt a Medicine check against the poison’s DC. After you attempt to Treat a Poison for a creature, you can’t try again until after the next time that creature attempts a save against the poison.",
+const actions = [
+  (godless) => ({
+    actions: "Passive",
+    name: "Treat Wounds",
+    buttonText: godless ? "Self" : "Standard",
+    healing: godless ? "2d8+20" : "2d8+15",
+    tags: ["Exploration", "Healing", "Manipulate"],
+    content: [
       {
-        title: "Critical Success",
+        title: "Requirements",
         text:
-          "You grant the creature a +4 circumstance bonus to its next saving throw against the poison.",
+          "You are holding healer's tools, or you are wearing them and have a hand free.",
+      },
+      "You spend 10 minutes treating one injured living creature (targeting yourself, if you so choose).",
+      ...(godless
+        ? [
+            {
+              title: "Godless Healing",
+              text:
+                "You recover an additional 5 Hit Points from a successful attempt to Treat your Wounds.",
+            },
+          ]
+        : []),
+    ],
+  }),
+  (godless) => ({
+    actions: "OneAction",
+    name: "Battle Medicine",
+    buttonText: godless ? "Self" : "Standard",
+    healing: godless ? "2d8+20" : "2d8+15",
+    tags: ["Healing", "Manipulate"],
+    content: [
+      {
+        title: "Requirements",
+        text: "You are holding or wearing healer's tools.",
+      },
+      "You can patch up yourself or an adjacent ally, even in combat. Attempt a Medicine check with the same DC as for Treat Wounds, and restore a corresponding amount of Hit Points; this does not remove the wounded condition. The target is then temporarily immune to your Battle Medicine for 1 day.",
+      {
+        title: "Medic",
+        text:
+          "Once per day, you can use Battle Medicine on a creature that’s temporarily immune.",
       },
       {
-        title: "Success",
-        text:
-          "You grant the creature a +2 circumstance bonus to its next saving throw against the poison.",
+        title: "Doctor's Visitation (flourish)",
+        text: "Stride, then use Battle Medicine.",
       },
+      ...(godless
+        ? [
+            {
+              title: "Godless Healing",
+              text:
+                "You recover an additional 5 Hit Points from a successful attempt to use Battle Medicine on you. After you or an ally use Battle Medicine on you, you become temporarily immune to that Battle Medicine for only 1 hour, instead of 1 day.",
+            },
+          ]
+        : []),
+    ],
+  }),
+  {
+    actions: "OneAction",
+    name: "Treat Poison",
+    skill: "Medicine",
+    tags: ["Manipulate"],
+    content: [
       {
-        title: "Critical Failure",
+        title: "Requirements",
         text:
-          "Your efforts cause the creature to take a –2 circumstance penalty to its next save against the poison.",
+          "You are holding healer's tools, or you are wearing them and have a hand free.",
+      },
+      [
+        "You treat a patient to prevent the spread of poison. Attempt a Medicine check against the poison’s DC. After you attempt to Treat a Poison for a creature, you can’t try again until after the next time that creature attempts a save against the poison.",
+        {
+          title: "Critical Success",
+          text:
+            "You grant the creature a +4 circumstance bonus to its next saving throw against the poison.",
+        },
+        {
+          title: "Success",
+          text:
+            "You grant the creature a +2 circumstance bonus to its next saving throw against the poison.",
+        },
+        {
+          title: "Critical Failure",
+          text:
+            "Your efforts cause the creature to take a –2 circumstance penalty to its next save against the poison.",
+        },
+      ],
+      {
+        title: "Doctor's Visitation (flourish)",
+        text: "Stride, then use Treat Poison.",
       },
     ],
-    {
-      title: "Doctor's Visitation (flourish)",
-      text: "Stride, then use Treat Poison.",
-    },
-  ],
-};
-const firstAid = {
-  actions: "TwoActions",
-  name: "Administer First Aid",
-  tags: ["Manipulate"],
-  content: [
-    {
-      title: "Requirements",
-      text:
-        "You are holding healer's tools, or you are wearing them and have a hand free.",
-    },
-    "You perform first aid on an adjacent creature that is dying or bleeding. If a creature is both dying and bleeding, choose which ailment you’re trying to treat before you roll. You can Administer First Aid again to attempt to remedy the other effect.",
-    [
+  },
+  {
+    actions: "TwoActions",
+    name: "Administer First Aid",
+    skill: "Medicine",
+    tags: ["Manipulate"],
+    content: [
       {
-        title: "Stabilize",
+        title: "Requirements",
         text:
-          "Attempt a Medicine check on a creature that has 0 Hit Points and the dying condition. The DC is equal to 5 + that creature’s recovery roll DC (typically 15 + its dying value).",
+          "You are holding healer's tools, or you are wearing them and have a hand free.",
       },
+      "You perform first aid on an adjacent creature that is dying or bleeding. If a creature is both dying and bleeding, choose which ailment you’re trying to treat before you roll. You can Administer First Aid again to attempt to remedy the other effect.",
+      [
+        {
+          title: "Stabilize",
+          text:
+            "Attempt a Medicine check on a creature that has 0 Hit Points and the dying condition. The DC is equal to 5 + that creature’s recovery roll DC (typically 15 + its dying value).",
+        },
+        {
+          title: "Stop Bleeding",
+          text:
+            "Attempt a Medicine check on a creature that is taking persistent bleed damage (page 452), giving them a chance to make another flat check to remove the persistent damage. The DC is usually the DC of the effect that caused the bleed.",
+        },
+      ],
+      [
+        {
+          title: "Success",
+          text:
+            "If you’re trying to stabilize, the creature loses the dying condition (but remains unconscious). If you’re trying to stop bleeding, the creature attempts a flat check to end the bleeding.",
+        },
+        {
+          title: "Critical Failure",
+          text:
+            "If you were trying to stabilize, the creature’s dying value increases by 1. If you were trying to stop bleeding, it immediately takes an amount of damage equal to its persistent bleed damage.",
+        },
+      ],
       {
-        title: "Stop Bleeding",
-        text:
-          "Attempt a Medicine check on a creature that is taking persistent bleed damage (page 452), giving them a chance to make another flat check to remove the persistent damage. The DC is usually the DC of the effect that caused the bleed.",
+        title: "Doctor's Visitation (flourish)",
+        text: "Stride, then use Administer First Aid.",
       },
     ],
-    [
-      {
-        title: "Success",
-        text:
-          "If you’re trying to stabilize, the creature loses the dying condition (but remains unconscious). If you’re trying to stop bleeding, the creature attempts a flat check to end the bleeding.",
-      },
-      {
-        title: "Critical Failure",
-        text:
-          "If you were trying to stabilize, the creature’s dying value increases by 1. If you were trying to stop bleeding, it immediately takes an amount of damage equal to its persistent bleed damage.",
-      },
-    ],
-    {
-      title: "Doctor's Visitation (flourish)",
-      text: "Stride, then use Administer First Aid.",
-    },
-  ],
-};
+  },
+];
 (async () => {
   const actionHeader = ({ actions, name, tags }) => `
     <header style="display: flex; font-size: 14px">
@@ -184,14 +192,33 @@ const firstAid = {
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
-  const medicineRoll = ({ name, tags }) => {
+  const buttonID = ({ name, buttonText }) =>
+    `${slugify(name)}${buttonText ? slugify(buttonText) : ""}`;
+  const actionButton = ({ name, buttonText }) => `
+    <button
+      class="dialog-button ${buttonID({ name, buttonText })}"
+      data-button="${buttonID({ name, buttonText })}"
+      style="margin-bottom:5px;"
+    >
+      ${buttonText ?? name}
+    </button>
+  `;
+  const skillRoll = ({ name, skill, tags }) => {
     const options = [
-      ...actor.getRollOptions(["all", "wis-based", "skill-check", "medicine"]),
+      ...actor.getRollOptions([
+        "all",
+        "wis-based",
+        "skill-check",
+        skill.toLowerCase(),
+      ]),
       ...(tags ? tags.map((tag) => slugify(tag)) : []),
       ...[`action:${slugify(name)}`],
     ];
-    console.log(options);
-    actor.data.data.skills.med.roll({ event, options });
+    actor.data.data.skills[
+      Object.entries(actor.data.data.skills).find(
+        (entry) => entry[1].name === skill.toLowerCase()
+      )[0]
+    ].roll({ event, options });
   };
   const chatMessage = (content) => {
     ChatMessage.create({
@@ -203,10 +230,10 @@ const firstAid = {
       `,
     });
   };
-  const damageRoll = (content, parts) => {
+  const damageRoll = (content, damage) => {
     DicePF2e.damageRoll({
       event,
-      parts,
+      parts: [damage],
       actor,
       data: actor.data.data,
       title: `
@@ -223,96 +250,68 @@ const firstAid = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
+  const execute = (action) => {
+    if (action.damage || action.healing) {
+      damageRoll(actionFormat(action), action.damage ?? action.healing);
+    } else {
+      chatMessage(actionFormat(action));
+    }
+    if (action.skill) {
+      skillRoll(action);
+    }
+  };
+  const lastAction = actions[actions.length - 1];
   const dialog = new Dialog(
     {
-      title: "Medicine",
-      content: `
-        ${actionHeader(treatWounds())}
-        <div class="dialog-buttons">
-          <button
-            class="dialog-button treatWounds"
-            data-button="treatWounds"
-            style="margin-bottom:5px;"
-          >
-            Standard
-          </button>
-          <button
-            class="dialog-button treatWoundsSelf"
-            data-button="treatWoundsSelf"
-            style="margin-bottom:5px;"
-          >
-            Self
-          </button>
-        </div>
-        <hr style="margin-top: 0; margin-bottom: 3px;"/>
-        ${actionHeader(battleMedicine())}
-        <div class="dialog-buttons">
-          <button
-            class="dialog-button battleMedicine"
-            data-button="battleMedicine"
-            style="margin-bottom: 5px;"
-          >
-            Standard
-          </button>
-          <button
-            class="dialog-button battleMedicineSelf"
-            data-button="battleMedicineSelf"
-            style="margin-bottom:5px;"
-          >
-            Self
-          </button>
-        </div>
-        <hr style="margin-top: 0; margin-bottom: 3px;"/>
-        ${actionHeader(treatPoison)}
-        <div class="dialog-buttons">
-          <button
-            class="dialog-button treatPoison"
-            data-button="treatPoison"
-            style="margin-bottom:5px;"
-          >
-            Treat Poison
-          </button>
-        </div>
-        <hr style="margin-top: 0; margin-bottom: 3px;"/>
-        ${actionHeader(firstAid)}
+      title: " ",
+      content: `${actions
+        .map((action, index) =>
+          index < actions.length - 1
+            ? typeof action === "function"
+              ? `${actionHeader(action())}
+                ${`<div class="dialog-buttons">
+                    ${actionButton(action())}
+                    ${actionButton(action(true))}
+                  </div>`}`
+              : `${actionHeader(action)}
+                ${`<div class="dialog-buttons">
+                    ${actionButton(action)}
+                  </div>`}`
+            : ""
+        )
+        .join(`<hr style="margin-top: 0; margin-bottom: 3px;"/>`)}
+        ${actionHeader(lastAction)}
       `,
-      buttons: {
-        firstAid: {
-          label: "Administer First Aid",
-          callback: () => {
-            chatMessage(actionFormat(firstAid));
-            medicineRoll(firstAid);
-          },
-        },
-      },
+      buttons: {},
     },
     { width: 200 }
   );
+  const setButtons = (action) => {
+    if (typeof action === "function") {
+      dialog.data.buttons[buttonID(action())] = {
+        label: action().buttonText ?? action().name,
+        callback: () => {
+          execute(action());
+        },
+      };
+      dialog.data.buttons[buttonID(action(true))] = {
+        label: action(true).buttonText ?? action(true).name,
+        callback: () => {
+          execute(action(true));
+        },
+      };
+    } else {
+      dialog.data.buttons[buttonID(action)] = {
+        label: action.buttonText ?? action.name,
+        callback: () => {
+          execute(action);
+        },
+      };
+    }
+  };
+  setButtons(lastAction);
   dialog.render(true);
-  dialog.data.buttons.treatWounds = {
-    callback: () => {
-      damageRoll(actionFormat(treatWounds()), ["2d8+15"]);
-    },
-  };
-  dialog.data.buttons.treatWoundsSelf = {
-    callback: () => {
-      damageRoll(actionFormat(treatWounds(true)), ["2d8+20"]);
-    },
-  };
-  dialog.data.buttons.battleMedicine = {
-    callback: () => {
-      damageRoll(actionFormat(battleMedicine()), ["2d8+15"]);
-    },
-  };
-  dialog.data.buttons.battleMedicineSelf = {
-    callback: () => {
-      damageRoll(actionFormat(battleMedicine(true)), ["2d8+20"]);
-    },
-  };
-  dialog.data.buttons.treatPoison = {
-    callback: () => {
-      chatMessage(actionFormat(treatPoison));
-      medicineRoll(treatPoison);
-    },
-  };
+  for (const action of actions.slice(0, -1)) {
+    setButtons(action);
+  }
 })();
