@@ -1,12 +1,8 @@
 const weapon = {
   name: "Composite Longbow",
-  tags: ["Deadly d10", "Propulsive", "Volley 30 ft."],
+  tags: ["Deadly d10", "Propulsive", "Volley 30 ft.", "Range 100 ft."],
   description: [
     "This projectile weapon is made from horn, wood, and sinew laminated together to increase the power of its pull and the force of its projectile. Like all longbows, its great size also increases the bow’s range and power. You must use two hands to fire it, and it cannot be used while mounted.",
-    {
-      title: "Range",
-      text: "100 ft.",
-    },
   ],
   effect: {
     name: "Volley 30 ft.",
@@ -25,6 +21,7 @@ const weapon = {
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
         : paragraph;
     return `
+      <hr style="margin-top: 0; margin-bottom: 3px;" />
       <header style="display: flex; font-size: 14px">
         <img
           style="flex: 0 0 36px; margin-right: 5px;"
@@ -54,38 +51,23 @@ const weapon = {
           `
           : `<hr style="margin-top: 3px;" />`
       }
-      <div style="font-weight: 500; font-size: 14px;">
-        ${content
-          .map((paragraph) =>
-            Array.isArray(paragraph)
-              ? paragraph
-                  .map((subParagraph) => checkTitle(subParagraph))
-                  .join(`<div style="margin-bottom: 5px;"></div>`)
-              : checkTitle(paragraph)
-          )
-          .join("<hr />")}
-      </div>
-    `;
-  };
-  const strikeButtonFormat = ({ id, modifiers }) => {
-    const buttonText = ["1st", "2nd", "3rd"];
-    return `
-      <div class="dialog-buttons" style="margin-top: 5px;">
-        ${modifiers
-          .map(
-            (modifier, index) => `
-            <button
-              class="dialog-button ${id}${index}"
-              data-button="${id}${index}"
-              style="margin-bottom:5px;"
-            >
-              ${buttonText[index]}
-               (${modifier >= 0 ? `+${modifier}` : `${modifier}`})
-            </button>
+      ${
+        content
+          ? `
+            <div style="font-weight: 500; font-size: 14px;">
+              ${content
+                .map((paragraph) =>
+                  Array.isArray(paragraph)
+                    ? paragraph
+                        .map((subParagraph) => checkTitle(subParagraph))
+                        .join(`<div style="margin-bottom: 5px;"></div>`)
+                    : checkTitle(paragraph)
+                )
+                .join("<hr />")}
+            </div>
           `
-          )
-          .join("")}
-      </div>
+          : ""
+      } 
     `;
   };
   const slugify = (string) =>
@@ -99,6 +81,58 @@ const weapon = {
     (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
       .find((strike) => strike.name === weapon.name);
+  const modifiers = strikeItem().variants.map((variant) => {
+    let modifier = strikeItem().totalModifier;
+    const splitLabel = variant.label.split(" ");
+    if (splitLabel[0] === "MAP") {
+      modifier += parseInt(splitLabel[1]);
+    }
+    return modifier;
+  });
+  const modToString = (modifier) =>
+    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+  const buttonFormat = (action, modifiers) => {
+    const buttons = ["", "", ""];
+    if (action.attack) {
+      if (action.actions === "Reaction") {
+        buttons[0] = modifiers
+          ? `${action.name} (${modToString(modifiers[0])})`
+          : action.name;
+      } else {
+        if (!(action.tags ?? []).includes("Press")) {
+          buttons[0] = modifiers ? `1st (${modToString(modifiers[0])})` : "1st";
+        }
+        if (
+          !(
+            action.actions === "ThreeActions" ||
+            (action.tags ?? []).includes("Open")
+          )
+        ) {
+          buttons[1] = modifiers ? `2nd (${modToString(modifiers[1])})` : "2nd";
+          if (action.actions !== "TwoActions") {
+            buttons[2] = modifiers
+              ? `3rd (${modToString(modifiers[2])})`
+              : "3rd";
+          }
+        }
+      }
+    } else {
+      buttons[0] = action.name;
+    }
+    let buttonHTML = "";
+    for (let i = 0; i < buttons.length; i++) {
+      if (buttons[i]) {
+        buttonHTML += `
+              <button
+                class="dialog-button ${slugify(action.name)}${i}"
+                data-button="${slugify(action.name)}${i}"
+                style="margin-bottom:5px;"
+              >${buttons[i]}</button>
+            `;
+      }
+    }
+    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonHTML}</div>`;
+  };
   const strike = (MAP) => {
     const options = [
       ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
@@ -130,38 +164,27 @@ const weapon = {
       strikeItem().damage({ event, options });
     }
   };
-  const modifiers = strikeItem().variants.map((variant) => {
-    let modifier = strikeItem().totalModifier;
-    const splitLabel = variant.label.split(" ");
-    if (splitLabel[0] === "MAP") {
-      modifier += parseInt(splitLabel[1]);
-    }
-    return modifier;
-  });
+  const strikeAction = {
+    actions: "OneAction",
+    name: `${weapon.name} Strike`,
+    attack: true,
+    tags: weapon.tags,
+  };
   const dialog = new Dialog({
     title: " ",
     content: `
-      ${actionFormat({
-        actions: "OneAction",
-        name: `${weapon.name} Strike`,
-        tags: weapon.tags,
-        content: [weapon.description],
-      })}
-      ${strikeButtonFormat({ id: "strike", modifiers: modifiers })}
-      <hr />
-      <strong>${weapon.effect.name}</strong> ${weapon.effect.description}
-      ${strikeButtonFormat({
-        id: slugify(weapon.effect.name),
-        modifiers: modifiers.map(
-          (modifier) => modifier + weapon.effect.modifier.value
-        ),
-      })}
-      <hr />
+      ${actionFormat(strikeAction)}
+      ${buttonFormat(strikeAction, modifiers)}
       <div style="
         display: flex;
         justify-content: center;
         margin-bottom: 5px;
-      "><strong>Damage</strong></div>
+      "><strong>${weapon.effect.name}</strong></div>
+      ${buttonFormat(
+        { ...strikeAction, name: weapon.effect.name },
+        modifiers.map((modifier) => modifier + weapon.effect.modifier.value)
+      )}
+      ${actionFormat({ actions: "Passive", name: "Damage" })}
     `,
     buttons: {
       damage: {
@@ -179,15 +202,15 @@ const weapon = {
     },
   });
   dialog.render(true);
-  for (let i = 0; i < 3; i++) {
-    dialog.data.buttons[`strike${i}`] = {
+  for (let MAP = 0; MAP < 3; MAP++) {
+    dialog.data.buttons[`${slugify(strikeAction.name)}${MAP}`] = {
       callback: () => {
-        strike(i);
+        strike(MAP);
       },
     };
-    dialog.data.buttons[`${slugify(weapon.effect.name)}${i}`] = {
+    dialog.data.buttons[`${slugify(weapon.effect.name)}${MAP}`] = {
       callback: () => {
-        strikeWithEffect(i);
+        strikeWithEffect(MAP);
       },
     };
   }
