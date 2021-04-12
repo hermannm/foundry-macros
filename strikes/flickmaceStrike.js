@@ -4,9 +4,22 @@ const weapon = {
   description: [
     "More a flail than a mace, this weapon has a short handle attached to a length of chain with a ball at the end. The ball is propelled to its reach with the flick of the wrist, the momentum of which brings the ball back to the wielder after the strike.",
   ],
-  criticalSpecialization: {
-    group: "Flail",
-    description: "The target is knocked prone.",
+  critical: {
+    content: [
+      {
+        title: "Critical Specialization (Flail)",
+        text: "The target is knocked prone.",
+      },
+      {
+        title: "Shock",
+        text:
+          "On a critical hit, electricity arcs out to deal an equal amount of electricity damage to up to two other creatures of your choice within 10 feet of the target.",
+      },
+    ],
+    rollData: {
+      selectors: ["electricity", "energy"],
+      multiplier: 2,
+    },
   },
   actions: [
     {
@@ -31,61 +44,61 @@ const weapon = {
   ],
 };
 (async () => {
-  const actionFormat = ({ actions, name, tags, content }) => {
+  const actionHeader = ({ actions, name, tags }) => `
+    <hr style="margin-top: 0; margin-bottom: 3px;" />
+    <header style="display: flex; font-size: 14px">
+      <img
+        style="flex: 0 0 36px; margin-right: 5px;"
+        src="systems/pf2e/icons/actions/${actions}.png"
+        title="${name}"
+        width="36"
+        height="36"
+      >
+      <h3 style="flex: 1; line-height: 36px; margin: 0;">
+        ${name}
+      </h3>
+    </header>
+    ${
+      tags
+        ? `
+          <hr style="margin-top: 3px; margin-bottom: 1px;" />
+          <div class="tags" style="
+            margin-bottom: 5px;
+          ">
+            ${tags
+              .map(
+                (tag) => `
+                  <span class="tag tag_alt"">${tag}</span>`
+              )
+              .join(" ")}
+          </div>
+        `
+        : `<hr style="margin-top: 3px;" />`
+    }
+  `;
+  const actionBody = ({ content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
         : paragraph;
     return `
-      <hr style="margin-top: 0; margin-bottom: 3px;" />
-      <header style="display: flex; font-size: 14px">
-        <img
-          style="flex: 0 0 36px; margin-right: 5px;"
-          src="systems/pf2e/icons/actions/${actions}.png"
-          title="${name}"
-          width="36"
-          height="36"
-        >
-        <h3 style="flex: 1; line-height: 36px; margin: 0;">
-          ${name}
-        </h3>
-      </header>
-      ${
-        tags
-          ? `
-            <hr style="margin-top: 3px; margin-bottom: 1px;" />
-            <div class="tags" style="
-              margin-bottom: 5px;
-            ">
-              ${tags
-                .map(
-                  (tag) => `
-                    <span class="tag tag_alt"">${tag}</span>`
-                )
-                .join(" ")}
-            </div>
-          `
-          : `<hr style="margin-top: 3px;" />`
-      }
-      ${
-        content
-          ? `
-            <div style="font-weight: 500; font-size: 14px;">
-              ${content
-                .map((paragraph) =>
-                  Array.isArray(paragraph)
-                    ? paragraph
-                        .map((subParagraph) => checkTitle(subParagraph))
-                        .join(`<div style="margin-bottom: 5px;"></div>`)
-                    : checkTitle(paragraph)
-                )
-                .join("<hr />")}
-            </div>
-          `
-          : ""
-      } 
+      <div style="font-weight: 500;">
+        ${content
+          .map((paragraph) =>
+            Array.isArray(paragraph)
+              ? paragraph
+                  .map((subParagraph) => checkTitle(subParagraph))
+                  .join(`<div style="margin-bottom: 5px;"></div>`)
+              : checkTitle(paragraph)
+          )
+          .join("<hr />")}
+      </div>
     `;
   };
+  const actionFormat = ({ actions, name, tags, content }) =>
+    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
+      ${actionHeader({ actions, name, tags })}${actionBody({ content })}
+    </div>`;
   const contentFormat = (action) => {
     const content = [];
     if (action.trigger) {
@@ -196,18 +209,40 @@ const weapon = {
       strikeItem.critical({
         event,
         options,
-        callback: () => {
-          if (weapon.criticalSpecialization) {
-            ChatMessage.create({
-              user: game.user._id,
-              speaker: ChatMessage.getSpeaker(),
-              content: actionFormat({
-                actions: "Passive",
-                name: `Critical Specialization`,
-                tags: [weapon.criticalSpecialization.group],
-                content: [weapon.criticalSpecialization.description],
-              }),
-            });
+        callback: (rollData) => {
+          console.log(rollData);
+          if (weapon.critical) {
+            const criticalContent = {
+              actions: "Passive",
+              name: "Critical Effects",
+              content: weapon.critical.content,
+            };
+            if (weapon.critical.rollData) {
+              DicePF2e.damageRoll({
+                event,
+                parts: [
+                  `${
+                    weapon.critical.rollData.multiplier
+                      ? `${weapon.critical.rollData.multiplier}*`
+                      : ""
+                  }${
+                    rollData.diceResults[weapon.critical.rollData.selectors[0]][
+                      weapon.critical.rollData.selectors[1]
+                    ]
+                  }`,
+                ],
+                actor,
+                data: actor.data.data,
+                title: `${actionFormat(criticalContent)}<hr />`,
+                speaker: ChatMessage.getSpeaker(),
+              });
+            } else {
+              ChatMessage.create({
+                user: game.user._id,
+                speaker: ChatMessage.getSpeaker(),
+                content: actionFormat(criticalContent),
+              });
+            }
           }
         },
       });
@@ -228,10 +263,10 @@ const weapon = {
       ${[strikeAction, ...(weapon.actions ?? [])]
         .map(
           (action) =>
-            `${actionFormat(action)}${buttonFormat(action, modifiers)}`
+            `${actionHeader(action)}${buttonFormat(action, modifiers)}`
         )
         .join("")}
-      ${actionFormat({ actions: "Passive", name: "Damage" })}
+      ${actionHeader({ actions: "Passive", name: "Damage" })}
     `,
       buttons: {
         damage: {
