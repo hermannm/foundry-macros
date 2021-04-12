@@ -15,61 +15,38 @@ const weapon = {
   },
 };
 (async () => {
-  const actionFormat = ({ actions, name, tags, content }) => {
-    const checkTitle = (paragraph) =>
-      typeof paragraph === "object"
-        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
-        : paragraph;
-    return `
-      <hr style="margin-top: 0; margin-bottom: 3px;" />
-      <header style="display: flex; font-size: 14px">
-        <img
-          style="flex: 0 0 36px; margin-right: 5px;"
-          src="systems/pf2e/icons/actions/${actions}.png"
-          title="${name}"
-          width="36"
-          height="36"
-        >
-        <h3 style="flex: 1; line-height: 36px; margin: 0;">
-          ${name}
-        </h3>
-      </header>
-      ${
-        tags
-          ? `
-            <hr style="margin-top: 3px; margin-bottom: 1px;" />
-            <div class="tags" style="
-              margin-bottom: 5px;
-            ">
-              ${tags
-                .map(
-                  (tag) => `
-                    <span class="tag tag_alt"">${tag}</span>`
-                )
-                .join(" ")}
-            </div>
-          `
-          : `<hr style="margin-top: 3px;" />`
-      }
-      ${
-        content
-          ? `
-            <div style="font-weight: 500; font-size: 14px;">
-              ${content
-                .map((paragraph) =>
-                  Array.isArray(paragraph)
-                    ? paragraph
-                        .map((subParagraph) => checkTitle(subParagraph))
-                        .join(`<div style="margin-bottom: 5px;"></div>`)
-                    : checkTitle(paragraph)
-                )
-                .join("<hr />")}
-            </div>
-          `
-          : ""
-      } 
-    `;
-  };
+  const actionHeader = ({ actions, name, tags }) => `
+    <hr style="margin-top: 0; margin-bottom: 3px;" />
+    <header style="display: flex; font-size: 14px">
+      <img
+        style="flex: 0 0 36px; margin-right: 5px;"
+        src="systems/pf2e/icons/actions/${actions}.png"
+        title="${name}"
+        width="36"
+        height="36"
+      >
+      <h3 style="flex: 1; line-height: 36px; margin: 0;">
+        ${name}
+      </h3>
+    </header>
+    ${
+      tags
+        ? `
+          <hr style="margin-top: 3px; margin-bottom: 1px;" />
+          <div class="tags" style="
+            margin-bottom: 5px;
+          ">
+            ${tags
+              .map(
+                (tag) => `
+                  <span class="tag tag_alt"">${tag}</span>`
+              )
+              .join(" ")}
+          </div>
+        `
+        : `<hr style="margin-top: 3px;" />`
+    }
+  `;
   const slugify = (string) =>
     // borrowed from https://gist.github.com/codeguy/6684588
     string
@@ -173,7 +150,7 @@ const weapon = {
   const dialog = new Dialog({
     title: " ",
     content: `
-      ${actionFormat(strikeAction)}
+      ${actionHeader(strikeAction)}
       ${buttonFormat(strikeAction, modifiers)}
       <div style="
         display: flex;
@@ -184,7 +161,7 @@ const weapon = {
         { ...strikeAction, name: weapon.effect.name },
         modifiers.map((modifier) => modifier + weapon.effect.modifier.value)
       )}
-      ${actionFormat({ actions: "Passive", name: "Damage" })}
+      ${actionHeader({ actions: "Passive", name: "Damage" })}
     `,
     buttons: {
       damage: {

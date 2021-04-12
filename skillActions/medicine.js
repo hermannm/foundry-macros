@@ -144,6 +144,7 @@ const actions = [
 ];
 (async () => {
   const actionHeader = ({ actions, name, tags }) => `
+    <hr style="margin-top: 0; margin-bottom: 3px;" />
     <header style="display: flex; font-size: 14px">
       <img
         style="flex: 0 0 36px; margin-right: 5px;"
@@ -180,7 +181,7 @@ const actions = [
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
         : paragraph;
     return `
-      <div style="font-weight: 500; font-size: 14px;">
+      <div style="font-weight: 500;">
         ${content
           .map((paragraph) =>
             Array.isArray(paragraph)
@@ -194,7 +195,9 @@ const actions = [
     `;
   };
   const actionFormat = ({ actions, name, tags, content }) =>
-    `${actionHeader({ actions, name, tags })}${actionBody({ content })}`;
+    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
+      ${actionHeader({ actions, name, tags })}${actionBody({ content })}
+    </div>`;
   const slugify = (string) =>
     // borrowed from https://gist.github.com/codeguy/6684588
     string
@@ -234,10 +237,7 @@ const actions = [
     ChatMessage.create({
       user: game.user._id,
       speaker: ChatMessage.getSpeaker(),
-      content: `
-        <hr style="margin-top: 0; margin-bottom: 3px;" />
-        ${content}
-      `,
+      content,
     });
   };
   const damageRoll = (content, damage) => {
@@ -246,17 +246,7 @@ const actions = [
       parts: [damage],
       actor,
       data: actor.data.data,
-      title: `
-        <hr style="margin-top: 0; margin-bottom: 3px;" />
-        <div style="
-          color: #191813;
-          font-style: normal;
-          line-height: 16.8px;
-        ">
-          ${content}
-        </div>
-        <hr />
-      `,
+      title: `${content}<hr />`,
       speaker: ChatMessage.getSpeaker(),
     });
   };
@@ -299,7 +289,7 @@ const actions = [
                   </div>`}`
             : ""
         )
-        .join(`<hr style="margin-top: 0; margin-bottom: 3px;"/>`)}
+        .join("")}
         ${actionHeader(lastAction)}
       `,
       buttons: {},
