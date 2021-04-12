@@ -13,6 +13,16 @@ const actions = [
       "You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn’t count toward your multiple attack penalty, and your multiple attack penalty doesn’t apply to this Strike.",
   },
   {
+    name: "Dueling Riposte",
+    actions: "Reaction",
+    attack: true,
+    trigger:
+      "A creature within your reach critically fails a Strike against you.",
+    requirements: "You are benefiting from Dueling Parry.",
+    description:
+      "You riposte against your flailing enemy. Make a melee Strike against or attempt to Disarm the triggering creature.",
+  },
+  {
     name: "Guardian's Deflection",
     actions: "Reaction",
     trigger:
