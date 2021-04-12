@@ -3,7 +3,21 @@ const actions = [
     actions: "Passive",
     name: "Treat Wounds",
     buttonText: godless ? "Self" : "Standard",
-    healing: godless ? "2d8+20" : "2d8+15",
+    healing: godless
+      ? [
+          "2d8+15",
+          {
+            action: {
+              actions: "Passive",
+              name: "Godless Healing",
+              content: [
+                "You recover an additional 5 Hit Points from a successful attempt to Treat your Wounds.",
+              ],
+            },
+            roll: "5",
+          },
+        ]
+      : "2d8+15",
     tags: ["Exploration", "Healing", "Manipulate"],
     content: [
       {
@@ -12,15 +26,10 @@ const actions = [
           "You are holding healer's tools, or you are wearing them and have a hand free.",
       },
       "You spend 10 minutes treating one injured living creature (targeting yourself, if you so choose).",
-      ...(godless
-        ? [
-            {
-              title: "Godless Healing",
-              text:
-                "You recover an additional 5 Hit Points from a successful attempt to Treat your Wounds.",
-            },
-          ]
-        : []),
+      {
+        title: "Ward Medic",
+        text: "When you use Treat Wounds, you can treat up to four targets.",
+      },
     ],
   }),
   (godless) => ({
@@ -165,13 +174,12 @@ const actions = [
         : `<hr style="margin-top: 3px;" />`
     }
   `;
-  const actionFormat = ({ actions, name, tags, content }) => {
+  const actionBody = ({ content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
         : paragraph;
     return `
-      ${actionHeader({ actions, name, tags })}
       <div style="font-weight: 500; font-size: 14px;">
         ${content
           .map((paragraph) =>
@@ -185,6 +193,8 @@ const actions = [
       </div>
     `;
   };
+  const actionFormat = ({ actions, name, tags, content }) =>
+    `${actionHeader({ actions, name, tags })}${actionBody({ content })}`;
   const slugify = (string) =>
     // borrowed from https://gist.github.com/codeguy/6684588
     string
@@ -252,7 +262,17 @@ const actions = [
   };
   const execute = (action) => {
     if (action.damage || action.healing) {
-      damageRoll(actionFormat(action), action.damage ?? action.healing);
+      if (Array.isArray(action.damage ?? action.healing)) {
+        for (const roll of action.damage ?? action.healing) {
+          if (typeof roll === "object") {
+            damageRoll(actionFormat(roll.action), roll.roll);
+          } else {
+            damageRoll(actionFormat(action), roll);
+          }
+        }
+      } else {
+        damageRoll(actionFormat(action), action.damage ?? action.healing);
+      }
     } else {
       chatMessage(actionFormat(action));
     }
