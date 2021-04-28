@@ -34,7 +34,7 @@ const criticalSpecialization = (rollData) => {
         <header style="display: flex;">
           <img
             style="flex: 0 0 36px; margin-right: 5px;"
-            src="systems/pf2e/icons/actions/Passive.png"
+            src="systems/pf2e/icons/actions/Passive.webp"
             title="Critical Specialization"
             width="36"
             height="36"

@@ -24,7 +24,7 @@ const action = {
       <header style="display: flex; font-size: 14px">
         <img
           style="flex: 0 0 36px; margin-right: 5px;"
-          src="systems/pf2e/icons/actions/${actions}.png"
+          src="systems/pf2e/icons/actions/${actions}.webp"
           title="${name}"
           width="36"
           height="36"
