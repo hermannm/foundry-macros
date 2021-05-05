@@ -102,14 +102,17 @@ const action = {
       standard: {
         label: "Standard",
         callback: () => {
-          damage(`${actor.data.data.details?.level?.value}d6`, "30-foot cone");
+          damage(
+            `${actor.data.data.details?.level?.value ?? 0}d6`,
+            "30-foot cone"
+          );
         },
       },
       hour: {
         label: "Used within last hour",
         callback: () => {
           damage(
-            Math.floor(actor.data.data.details?.level?.value / 2),
+            `${Math.floor((actor.data.data.details?.level?.value ?? 0) / 2)}d6`,
             "15-foot cone"
           );
         },
