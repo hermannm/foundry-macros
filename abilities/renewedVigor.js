@@ -6,7 +6,8 @@ const action = {
     "You pause to recover your raging vigor. You gain temporary Hit Points equal to half your level plus your Constitution modifier.",
   effect: {
     tempHP:
-      actor.data.data.details.level.value + actor.data.data.abilities.con.mod,
+      Math.floor(actor.data.data.details.level.value / 2) +
+      actor.data.data.abilities.con.mod,
   },
 };
 (async () => {
