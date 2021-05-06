@@ -13,7 +13,7 @@ const effect = {
       damageType: "cold",
     },
   ],
-  iconPath: "systems/pf2e/icons/features/ancestry/darkvision.jpg",
+  iconPath: "systems/pf2e/icons/features/ancestry/darkvision.webp",
 };
 (async () => {
   if (

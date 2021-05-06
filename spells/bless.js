@@ -5,7 +5,7 @@ const effect = {
     value: 1,
     type: "status",
   },
-  iconPath: "systems/pf2e/icons/spells/bless.jpg",
+  iconPath: "systems/pf2e/icons/spells/bless.webp",
 };
 (async () => {
   if (

@@ -12,7 +12,7 @@ const action = {
       value: 2,
       type: "circumstance",
     },
-    iconPath: "systems/pf2e/icons/features/classes/deific-weapon.jpg",
+    iconPath: "systems/pf2e/icons/features/classes/deific-weapon.webp",
   },
 };
 (async () => {

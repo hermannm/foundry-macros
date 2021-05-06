@@ -9,7 +9,7 @@ const effect = {
     selector: "damage",
     diceNumber: 1,
   },
-  iconPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
+  iconPath: "systems/pf2e/icons/spells/weapon-surge.webp",
 };
 const {
   _id: focusID,

@@ -5,7 +5,7 @@ const effect = {
     value: 2,
     type: "status",
   },
-  iconPath: "systems/pf2e/icons/spells/lay-on-hands.jpg",
+  iconPath: "systems/pf2e/icons/spells/lay-on-hands.webp",
 };
 (async () => {
   if (

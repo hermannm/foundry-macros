@@ -1,5 +1,5 @@
 const itemName = "Spell Effect: Inspire Courage";
-const imgPath = "systems/pf2e/icons/spells/inspire-courage.jpg";
+const imgPath = "systems/pf2e/icons/spells/inspire-courage.webp";
 (async () => {
   if (actor.items.find((item) => item.data.name === itemName)) {
     if (token.data.effects.includes(imgPath)) {

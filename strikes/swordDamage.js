@@ -7,7 +7,7 @@ const effectToConsume = {
   damageDice: {
     selector: "damage",
   },
-  iconPath: "systems/pf2e/icons/spells/weapon-surge.jpg",
+  iconPath: "systems/pf2e/icons/spells/weapon-surge.webp",
 };
 (async () => {
   if (!event.shiftKey) {

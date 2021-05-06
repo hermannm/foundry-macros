@@ -9,7 +9,7 @@ const effect = {
     selector: "damage",
     diceNumber: 1,
   },
-  iconPath: "systems/pf2e/icons/spells/magic-weapon.jpg",
+  iconPath: "systems/pf2e/icons/spells/magic-weapon.webp",
 };
 (async () => {
   if (

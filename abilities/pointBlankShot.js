@@ -5,7 +5,7 @@ const effect = {
     value: 2,
     type: "circumstance",
   },
-  iconPath: "systems/pf2e/icons/features/classes/precision.jpg",
+  iconPath: "systems/pf2e/icons/features/classes/precision.webp",
 };
 (async () => {
   if (

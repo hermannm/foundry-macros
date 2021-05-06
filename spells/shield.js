@@ -5,7 +5,7 @@ const effect = {
     value: 1,
     type: "circumstance",
   },
-  iconPath: "systems/pf2e/icons/spells/shield.jpg",
+  iconPath: "systems/pf2e/icons/spells/shield.webp",
 };
 (async () => {
   if (
