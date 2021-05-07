@@ -240,7 +240,7 @@ const weapon = {
     }
     if (
       actor.items.find((item) =>
-        item.data.name.includes("Weapon Specialization")
+        (item.data.data.slug ?? "").includes("weapon-specialization")
       )
     ) {
       let weaponSpecializationDamage;
@@ -256,6 +256,15 @@ const weapon = {
           break;
       }
       if (weaponSpecializationDamage) {
+        if (
+          actor.items.find((item) =>
+            (item.data.data.slug ?? "").includes(
+              "greater-weapon-specialization"
+            )
+          )
+        ) {
+          weaponSpecializationDamage *= 2;
+        }
         if (damageParts.formula.includes(" + ")) {
           const splitFormula = damageParts.formula.split(" + ");
           damageParts.formula =
