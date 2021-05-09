@@ -1,19 +1,18 @@
 const weapon = {
   name: "Warhammer",
   tags: ["Attack", "Shove"],
-  critical: {
-    content: [
-      {
-        title: "Shock",
-        text:
-          "On a critical hit, electricity arcs out to deal an equal amount of electricity damage to up to two other creatures of your choice within 10 feet of the target.",
+  criticalEffects: [
+    {
+      name: "Shock",
+      content: [
+        "On a critical hit, electricity arcs out to deal an equal amount of electricity damage to up to two other creatures of your choice within 10 feet of the target.",
+      ],
+      rollData: {
+        selectors: ["electricity", "energy"],
+        multiplier: 2,
       },
-    ],
-    rollData: {
-      selectors: ["electricity", "energy"],
-      multiplier: 2,
     },
-  },
+  ],
   actions: [
     {
       name: "Snagging Strike",
@@ -203,38 +202,38 @@ const weapon = {
         event,
         options,
         callback: (rollData) => {
-          console.log(rollData);
-          if (weapon.critical) {
-            const criticalContent = {
-              actions: "Passive",
-              name: "Critical Effects",
-              content: weapon.critical.content,
-            };
-            if (weapon.critical.rollData) {
-              DicePF2e.damageRoll({
-                event,
-                parts: [
-                  `${
-                    weapon.critical.rollData.multiplier
-                      ? `${weapon.critical.rollData.multiplier}*`
-                      : ""
-                  }${
-                    rollData.diceResults[weapon.critical.rollData.selectors[0]][
-                      weapon.critical.rollData.selectors[1]
-                    ]
-                  }`,
-                ],
-                actor,
-                data: actor.data.data,
-                title: `${actionFormat(criticalContent)}<hr />`,
-                speaker: ChatMessage.getSpeaker(),
-              });
-            } else {
-              ChatMessage.create({
-                user: game.user._id,
-                speaker: ChatMessage.getSpeaker(),
-                content: actionFormat(criticalContent),
-              });
+          if (weapon.criticalEffects) {
+            for (const criticalEffect of weapon.criticalEffects) {
+              const criticalEffectAction = {
+                ...criticalEffect,
+                actions: "Passive",
+              };
+              if (criticalEffect.rollData) {
+                DicePF2e.damageRoll({
+                  event,
+                  parts: [
+                    `${
+                      criticalEffect.rollData.multiplier
+                        ? `${criticalEffect.rollData.multiplier}*`
+                        : ""
+                    }${
+                      rollData.diceResults[
+                        criticalEffect.rollData.selectors[0]
+                      ][criticalEffect.rollData.selectors[1]]
+                    }`,
+                  ],
+                  actor,
+                  data: actor.data.data,
+                  title: `${actionFormat(criticalEffectAction)}<hr />`,
+                  speaker: ChatMessage.getSpeaker(),
+                });
+              } else {
+                ChatMessage.create({
+                  user: game.user._id,
+                  speaker: ChatMessage.getSpeaker(),
+                  content: actionFormat(criticalEffectAction),
+                });
+              }
             }
           }
         },
