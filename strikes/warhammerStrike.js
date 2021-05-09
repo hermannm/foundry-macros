@@ -1,15 +1,8 @@
 const weapon = {
-  name: "Gnome Flickmace",
-  tags: ["Attack", "Gnome", "Reach"],
-  description: [
-    "More a flail than a mace, this weapon has a short handle attached to a length of chain with a ball at the end. The ball is propelled to its reach with the flick of the wrist, the momentum of which brings the ball back to the wielder after the strike.",
-  ],
+  name: "Warhammer",
+  tags: ["Attack", "Shove"],
   critical: {
     content: [
-      {
-        title: "Critical Specialization (Flail)",
-        text: "The target is knocked prone.",
-      },
       {
         title: "Shock",
         text:
@@ -39,7 +32,7 @@ const weapon = {
       tags: ["Fighter"],
       requirements: "You are wielding a melee weapon.",
       description:
-        "Using your weapon as a lever, you force your opponent to end up right where you want them. Make a Strike with the required weapon. If the Strike hits, you can move the target up to 10 feet into a space in your reach. You can move the target through your space during this movement. This follows the forced movement rules. Your Strike gains the following failure effect.",
+        "Extending your body to its limits, you attack an enemy that would normally be beyond your reach. Make a Strike with a melee weapon, increasing your reach by 5 feet for that Strike. If the weapon has the disarm, shove, or trip trait, you can use the corresponding action instead of a Strike.",
     },
   ],
 };

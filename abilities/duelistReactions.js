@@ -1,6 +1,6 @@
 const weapon = {
-  name: "Gnome Flickmace",
-  tags: ["Attack", "Gnome", "Reach"],
+  name: "Warhammer",
+  tags: ["Attack", "Shove"],
 };
 const actions = [
   {
