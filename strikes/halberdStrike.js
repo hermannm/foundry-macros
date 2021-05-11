@@ -1,6 +1,6 @@
 const weapon = {
   name: "Halberd",
-  tags: ["Attack", "Versatile S"],
+  tags: ["Reach", "Versatile S"],
   damageTypes: ["Piercing", "Slashing"],
   criticalEffects: [
     {
