@@ -147,9 +147,10 @@ const weapon = {
     attack: true,
     tags: weapon.tags,
   };
-  const dialog = new Dialog({
-    title: " ",
-    content: `
+  const dialog = new Dialog(
+    {
+      title: " ",
+      content: `
       ${actionHeader(strikeAction)}
       ${buttonFormat(strikeAction, modifiers)}
       <div style="
@@ -163,21 +164,23 @@ const weapon = {
       )}
       ${actionHeader({ actions: "Passive", name: "Damage" })}
     `,
-    buttons: {
-      damage: {
-        label: "✔️",
-        callback: () => {
-          damage({ crit: false });
+      buttons: {
+        damage: {
+          label: "✔️",
+          callback: () => {
+            damage({ crit: false });
+          },
         },
-      },
-      critical: {
-        label: "💥",
-        callback: () => {
-          damage({ crit: true });
+        critical: {
+          label: "💥",
+          callback: () => {
+            damage({ crit: true });
+          },
         },
       },
     },
-  });
+    { width: 300 }
+  );
   dialog.render(true);
   for (let MAP = 0; MAP < 3; MAP++) {
     dialog.data.buttons[`${slugify(strikeAction.name)}${MAP}`] = {
