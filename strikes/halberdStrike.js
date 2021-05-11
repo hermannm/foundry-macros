@@ -14,50 +14,7 @@ const weapon = {
       },
     },
   ],
-  actions: [
-    {
-      name: "Sudden Charge",
-      actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-      attack: true,
-      tags: ["Fighter", "Flourish", "Open"],
-      description:
-        "With a quick sprint, you dash up to your foe and swing. Stride twice. If you end your movement within melee reach of at least one enemy, you can make a melee Strike against that enemy. You can use Sudden Charge while Burrowing, Climbing, Flying, or Swimming instead of Striding if you have the corresponding movement type.",
-    },
-    {
-      name: "Intimidating Strike",
-      actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-      attack: true,
-      tags: ["Emotion", "Fear", "Fighter", "Mental"],
-      description:
-        "Your blow not only wounds creatures but also shatters their confidence. Make a melee Strike. If you hit and deal damage, the target is frightened 1, or frightened 2 on a critical hit.",
-    },
-    {
-      name: "Positioning Assault",
-      actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-      attack: true,
-      tags: ["Fighter", "Flourish"],
-      requirements:
-        "You are wielding a two-handed melee weapon and your target is within your reach.",
-      description:
-        "With punishing blows, you force your opponent into position. Make a Strike with the required weapon. If you hit, you move the target 5 feet into a space in your reach. This follows the forced movement rules.",
-    },
-    {
-      name: "Brutish Shove",
-      actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-      attack: true,
-      tags: ["Fighter", "Press"],
-      requirements: "You are wielding a two-handed melee weapon.",
-      description: [
-        "Throwing your weight behind your attack, you hit your opponent hard enough to make it stumble back. Make a Strike with a two-handed melee weapon. If you hit a target that is up to two sizes larger than you, that creature is flat-footed until the end of your current turn, and you can automatically Shove it, with the same benefits as the Shove action (including the critical success effect, if your Strike was a critical hit). If you move to follow the target, your movement doesn’t trigger reactions.",
-        {
-          title: "Powerful Shove",
-          text: "When a creature you Shove has to stop moving because it would hit an object, it takes damage equal to your Strength modifier (minimum 1). This happens regardless of how you Shoved the creature.",
-        },
-      ],
-      failure:
-        "The target becomes flat-footed until the end of your current turn.",
-    },
-  ],
+  actions: [],
 };
 (async () => {
   const actionHeader = ({ actions, name, tags }) => `
@@ -283,61 +240,63 @@ const weapon = {
     {
       title: " ",
       content: `
-      ${[strikeAction, ...(weapon.actions ?? [])]
-        .map(
-          (action) =>
-            `${actionHeader(action)}${buttonFormat(action, modifiers)}`
-        )
-        .join("")}
-      ${actionHeader({ actions: "Passive", name: "Damage" })}
-      ${
-        weapon.damageTypes
-          ? `
-            ${weapon.damageTypes
-              .slice(0, -1)
-              .map(
-                (damageType) => `
-                  <div style="
-                    display: flex;
-                    justify-content: center;
-                    margin-bottom: 5px;
-                  "><strong>${damageType}</strong></div>
-                  <div class="dialog-buttons">
-                    <button
-                      class="dialog-button damage-${damageType
-                        .charAt(0)
-                        .toLowerCase()}"
-                      data-button="damage-${damageType.charAt(0).toLowerCase()}"
-                      style="margin-bottom:5px;"
-                    >
-                      ✔️
-                    </button>
-                    <button
-                      class="dialog-button critical-${damageType
-                        .charAt(0)
-                        .toLowerCase()}"
-                      data-button="critical-${damageType
-                        .charAt(0)
-                        .toLowerCase()}"
-                      style="margin-bottom:5px;"
-                    >
-                      💥
-                    </button>
-                  </div>
-                `
-              )
-              .join("")}
-            <div style="
-              display: flex;
-              justify-content: center;
-              margin-bottom: 5px;
-            "><strong>${
-              weapon.damageTypes[weapon.damageTypes.length - 1]
-            }</strong></div>
-            `
-          : ""
-      }
-    `,
+        ${[strikeAction, ...(weapon.actions ?? [])]
+          .map(
+            (action) =>
+              `${actionHeader(action)}${buttonFormat(action, modifiers)}`
+          )
+          .join("")}
+        ${actionHeader({ actions: "Passive", name: "Damage" })}
+        ${
+          weapon.damageTypes
+            ? `
+              ${weapon.damageTypes
+                .slice(0, -1)
+                .map(
+                  (damageType) => `
+                    <div style="
+                      display: flex;
+                      justify-content: center;
+                      margin-bottom: 5px;
+                    "><strong>${damageType}</strong></div>
+                    <div class="dialog-buttons">
+                      <button
+                        class="dialog-button damage-${damageType
+                          .charAt(0)
+                          .toLowerCase()}"
+                        data-button="damage-${damageType
+                          .charAt(0)
+                          .toLowerCase()}"
+                        style="margin-bottom:5px;"
+                      >
+                        ✔️
+                      </button>
+                      <button
+                        class="dialog-button critical-${damageType
+                          .charAt(0)
+                          .toLowerCase()}"
+                        data-button="critical-${damageType
+                          .charAt(0)
+                          .toLowerCase()}"
+                        style="margin-bottom:5px;"
+                      >
+                        💥
+                      </button>
+                    </div>
+                  `
+                )
+                .join("")}
+              <div style="
+                display: flex;
+                justify-content: center;
+                margin-bottom: 5px;
+              "><strong>${
+                weapon.damageTypes[weapon.damageTypes.length - 1]
+              }</strong></div>
+              `
+            : ""
+        }
+      `,
       buttons: {},
     },
     { width: 300 }
