@@ -41,6 +41,22 @@ const weapon = {
       description:
         "With punishing blows, you force your opponent into position. Make a Strike with the required weapon. If you hit, you move the target 5 feet into a space in your reach. This follows the forced movement rules.",
     },
+    {
+      name: "Brutish Shove",
+      actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+      attack: true,
+      tags: ["Fighter", "Press"],
+      requirements: "You are wielding a two-handed melee weapon.",
+      description: [
+        "Throwing your weight behind your attack, you hit your opponent hard enough to make it stumble back. Make a Strike with a two-handed melee weapon. If you hit a target that is up to two sizes larger than you, that creature is flat-footed until the end of your current turn, and you can automatically Shove it, with the same benefits as the Shove action (including the critical success effect, if your Strike was a critical hit). If you move to follow the target, your movement doesn’t trigger reactions.",
+        {
+          title: "Powerful Shove",
+          text: "When a creature you Shove has to stop moving because it would hit an object, it takes damage equal to your Strength modifier (minimum 1). This happens regardless of how you Shoved the creature.",
+        },
+      ],
+      failure:
+        "The target becomes flat-footed until the end of your current turn.",
+    },
   ],
 };
 (async () => {
