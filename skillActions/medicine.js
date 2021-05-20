@@ -20,16 +20,7 @@ const actions = [
       : "2d8+15",
     tags: ["Exploration", "Healing", "Manipulate"],
     content: [
-      {
-        title: "Requirements",
-        text:
-          "You are holding healer's tools, or you are wearing them and have a hand free.",
-      },
-      "You spend 10 minutes treating one injured living creature (targeting yourself, if you so choose).",
-      {
-        title: "Ward Medic",
-        text: "When you use Treat Wounds, you can treat up to four targets.",
-      },
+      "You spend 10 minutes treating up to four injured living creatures (targeting yourself, if you so choose).",
     ],
   }),
   (godless) => ({
@@ -46,8 +37,7 @@ const actions = [
       "You can patch up yourself or an adjacent ally, even in combat. Attempt a Medicine check with the same DC as for Treat Wounds, and restore a corresponding amount of Hit Points; this does not remove the wounded condition. The target is then temporarily immune to your Battle Medicine for 1 day.",
       {
         title: "Medic",
-        text:
-          "Once per day, you can use Battle Medicine on a creature that’s temporarily immune.",
+        text: "Once per day, you can use Battle Medicine on a creature that’s temporarily immune.",
       },
       {
         title: "Doctor's Visitation (flourish)",
@@ -57,8 +47,7 @@ const actions = [
         ? [
             {
               title: "Godless Healing",
-              text:
-                "You recover an additional 5 Hit Points from a successful attempt to use Battle Medicine on you. After you or an ally use Battle Medicine on you, you become temporarily immune to that Battle Medicine for only 1 hour, instead of 1 day.",
+              text: "You recover an additional 5 Hit Points from a successful attempt to use Battle Medicine on you. After you or an ally use Battle Medicine on you, you become temporarily immune to that Battle Medicine for only 1 hour, instead of 1 day.",
             },
           ]
         : []),
@@ -72,25 +61,21 @@ const actions = [
     content: [
       {
         title: "Requirements",
-        text:
-          "You are holding healer's tools, or you are wearing them and have a hand free.",
+        text: "You are holding healer's tools, or you are wearing them and have a hand free.",
       },
       [
         "You treat a patient to prevent the spread of poison. Attempt a Medicine check against the poison’s DC. After you attempt to Treat a Poison for a creature, you can’t try again until after the next time that creature attempts a save against the poison.",
         {
           title: "Critical Success",
-          text:
-            "You grant the creature a +4 circumstance bonus to its next saving throw against the poison.",
+          text: "You grant the creature a +4 circumstance bonus to its next saving throw against the poison.",
         },
         {
           title: "Success",
-          text:
-            "You grant the creature a +2 circumstance bonus to its next saving throw against the poison.",
+          text: "You grant the creature a +2 circumstance bonus to its next saving throw against the poison.",
         },
         {
           title: "Critical Failure",
-          text:
-            "Your efforts cause the creature to take a –2 circumstance penalty to its next save against the poison.",
+          text: "Your efforts cause the creature to take a –2 circumstance penalty to its next save against the poison.",
         },
       ],
       {
@@ -107,32 +92,25 @@ const actions = [
     content: [
       {
         title: "Requirements",
-        text:
-          "You are holding healer's tools, or you are wearing them and have a hand free.",
+        text: "You are holding healer's tools, or you are wearing them and have a hand free.",
       },
-      "You perform first aid on an adjacent creature that is dying or bleeding. If a creature is both dying and bleeding, choose which ailment you’re trying to treat before you roll. You can Administer First Aid again to attempt to remedy the other effect.",
       [
+        "You perform first aid on an adjacent creature that is dying or bleeding. If a creature is both dying and bleeding, choose which ailment you’re trying to treat before you roll. You can Administer First Aid again to attempt to remedy the other effect.",
         {
           title: "Stabilize",
-          text:
-            "Attempt a Medicine check on a creature that has 0 Hit Points and the dying condition. The DC is equal to 5 + that creature’s recovery roll DC (typically 15 + its dying value).",
+          text: "Attempt a Medicine check on a creature that has 0 Hit Points and the dying condition. The DC is equal to 5 + that creature’s recovery roll DC (typically 15 + its dying value).",
         },
         {
           title: "Stop Bleeding",
-          text:
-            "Attempt a Medicine check on a creature that is taking persistent bleed damage (page 452), giving them a chance to make another flat check to remove the persistent damage. The DC is usually the DC of the effect that caused the bleed.",
+          text: "Attempt a Medicine check on a creature that is taking persistent bleed damage (page 452), giving them a chance to make another flat check to remove the persistent damage. The DC is usually the DC of the effect that caused the bleed.",
         },
-      ],
-      [
         {
           title: "Success",
-          text:
-            "If you’re trying to stabilize, the creature loses the dying condition (but remains unconscious). If you’re trying to stop bleeding, the creature attempts a flat check to end the bleeding.",
+          text: "If you’re trying to stabilize, the creature loses the dying condition (but remains unconscious). If you’re trying to stop bleeding, the creature attempts a flat check to end the bleeding.",
         },
         {
           title: "Critical Failure",
-          text:
-            "If you were trying to stabilize, the creature’s dying value increases by 1. If you were trying to stop bleeding, it immediately takes an amount of damage equal to its persistent bleed damage.",
+          text: "If you were trying to stabilize, the creature’s dying value increases by 1. If you were trying to stop bleeding, it immediately takes an amount of damage equal to its persistent bleed damage.",
         },
       ],
       {
