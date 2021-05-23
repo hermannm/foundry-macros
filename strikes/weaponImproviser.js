@@ -8,7 +8,7 @@ const weapon = {
     {
       name: "Improvised Pummel",
       actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
-      attack: true,
+      strike: true,
       tags: ["Archetype"],
       requirements: "You are wielding an improvised weapon.",
       description:
@@ -16,141 +16,10 @@ const weapon = {
     },
   ],
 };
+
 (async () => {
-  const actionHeader = ({ actions, name, tags }) => `
-    <hr style="margin-top: 0; margin-bottom: 3px;" />
-    <header style="display: flex; font-size: 14px">
-      <img
-        style="flex: 0 0 36px; margin-right: 5px;"
-        src="systems/pf2e/icons/actions/${actions}.webp"
-        title="${name}"
-        width="36"
-        height="36"
-      >
-      <h3 style="flex: 1; line-height: 36px; margin: 0;">
-        ${name}
-      </h3>
-    </header>
-    ${
-      tags
-        ? `
-          <hr style="margin-top: 3px; margin-bottom: 1px;" />
-          <div class="tags" style="
-            margin-bottom: 5px;
-          ">
-            ${tags
-              .map(
-                (tag) => `
-                  <span class="tag tag_alt"">${tag}</span>`
-              )
-              .join(" ")}
-          </div>
-        `
-        : `<hr style="margin-top: 3px;" />`
-    }
-  `;
-  const actionBody = ({ content }) => {
-    const checkTitle = (paragraph) =>
-      typeof paragraph === "object"
-        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
-        : paragraph;
-    return `
-      <div style="font-weight: 500;">
-        ${content
-          .map((paragraph) =>
-            Array.isArray(paragraph)
-              ? paragraph
-                  .map((subParagraph) => checkTitle(subParagraph))
-                  .join(`<div style="margin-bottom: 5px;"></div>`)
-              : checkTitle(paragraph)
-          )
-          .join("<hr />")}
-      </div>
-    `;
-  };
-  const actionFormat = ({ actions, name, tags, content }) =>
-    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
-      ${actionHeader({ actions, name, tags })}${actionBody({ content })}
-    </div>`;
-  const contentFormat = (action) => {
-    const content = [];
-    if (action.trigger) {
-      content.push({
-        title: "Trigger",
-        text: action.trigger,
-      });
-    }
-    if (action.requirements) {
-      content.push({
-        title: "Requirements",
-        text: action.requirements,
-      });
-    }
-    if (action.description) {
-      content.push(action.description);
-    }
-    if (action.failure) {
-      content.push({
-        title: "Failure",
-        text: action.failure,
-      });
-    }
-    return {
-      ...action,
-      content,
-    };
-  };
-  const slugify = (string) =>
-    // borrowed from https://gist.github.com/codeguy/6684588
-    string
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
-  const buttonFormat = (action, modifiers) => {
-    const buttons = ["", "", ""];
-    if (action.attack) {
-      if (action.actions === "Reaction") {
-        buttons[0] = modifiers
-          ? `${action.name} (${modToString(modifiers[0])})`
-          : action.name;
-      } else {
-        if (!(action.tags ?? []).includes("Press")) {
-          buttons[0] = modifiers ? `1st (${modToString(modifiers[0])})` : "1st";
-        }
-        if (
-          !(
-            action.actions === "ThreeActions" ||
-            (action.tags ?? []).includes("Open")
-          )
-        ) {
-          buttons[1] = modifiers ? `2nd (${modToString(modifiers[1])})` : "2nd";
-          if (action.actions !== "TwoActions") {
-            buttons[2] = modifiers
-              ? `3rd (${modToString(modifiers[2])})`
-              : "3rd";
-          }
-        }
-      }
-    } else {
-      buttons[0] = action.name;
-    }
-    let buttonHTML = "";
-    for (let i = 0; i < buttons.length; i++) {
-      if (buttons[i]) {
-        buttonHTML += `
-            <button
-              class="dialog-button ${slugify(action.name)}${i}"
-              data-button="${slugify(action.name)}${i}"
-              style="margin-bottom:5px;"
-            >${buttons[i]}</button>
-          `;
-      }
-    }
-    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonHTML}</div>`;
-  };
+  const dialogButtons = [];
+
   const calculateProficiencyModifier = (level, proficiency) =>
     level +
     (proficiency === "trained"
@@ -162,6 +31,7 @@ const weapon = {
       : proficiency === "legendary"
       ? 8
       : 0);
+
   const attackModifiers = (ability) =>
     [0, -5, -10].map((multiAttackModifier) => {
       const abilityModifier =
@@ -196,20 +66,27 @@ const weapon = {
         ],
       };
     });
+
   const meleeModifiers = attackModifiers("strength");
+
   const rangedModifiers = attackModifiers("dexterity");
-  const strike = ({ MAP, melee }) => {
+
+  const modToString = (modifier) =>
+    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+
+  const strike = ({ strikeIndex, melee }) => {
     const modifiers = melee ? meleeModifiers : rangedModifiers;
+
     DicePF2e.d20Roll({
       event,
-      parts: [modifiers[MAP].total],
+      parts: [modifiers[strikeIndex].total],
       data: actor.data,
       title: `
         <span class="flavor-text">
           <strong>Strike: ${weapon.name}</strong>
           (${melee ? "melee" : "ranged"})
           <div class="tags">
-            ${modifiers[MAP].parts
+            ${modifiers[strikeIndex].parts
               .map(
                 (part) => `
                   <span class="tag tag_alt">
@@ -224,12 +101,15 @@ const weapon = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
+
   const damage = ({ crit, dieSize, strength }) => {
     const diceDamage = `${weapon.diceNumber}${dieSize}`;
+
     const damageParts = {
       formula: diceDamage,
       tags: [{ label: "Base", value: diceDamage }],
     };
+
     if (strength) {
       const strengthDamage = actor.data.data.abilities.str.mod;
       damageParts.formula += ` + ${strengthDamage}`;
@@ -238,6 +118,7 @@ const weapon = {
         value: modToString(strengthDamage),
       });
     }
+
     if (
       actor.items.find((item) =>
         (item.data.data.slug ?? "").includes("weapon-specialization")
@@ -279,9 +160,11 @@ const weapon = {
         });
       }
     }
+
     if (crit) {
       damageParts.formula = `2 * (${damageParts.formula})`;
     }
+
     DicePF2e.damageRoll({
       event,
       parts: [damageParts.formula],
@@ -310,102 +193,370 @@ const weapon = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
+
+  const formatActionHeader = ({ actions, name, tags }) => `
+    <hr style="margin-top: 0; margin-bottom: 3px;" />
+    <header style="display: flex; font-size: 14px">
+      <img
+        style="flex: 0 0 36px; margin-right: 5px;"
+        src="systems/pf2e/icons/actions/${actions}.webp"
+        title="${name}"
+        width="36"
+        height="36"
+      >
+      <h3 style="flex: 1; line-height: 36px; margin: 0;">
+        ${name}
+      </h3>
+    </header>
+    ${
+      tags
+        ? `
+          <hr style="margin-top: 3px; margin-bottom: 1px;" />
+          <div class="tags" style="
+            margin-bottom: 5px;
+          ">
+            ${tags
+              .map(
+                (tag) => `
+                  <span class="tag tag_alt"">${tag}</span>`
+              )
+              .join(" ")}
+          </div>
+        `
+        : `<hr style="margin-top: 3px;" />`
+    }
+  `;
+
+  const formatActionBody = ({ content }) => {
+    const checkTitle = (paragraph) =>
+      typeof paragraph === "object"
+        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
+        : paragraph;
+    return `
+      <div style="font-weight: 500;">
+        ${content
+          .map((paragraph) =>
+            Array.isArray(paragraph)
+              ? paragraph
+                  .map((subParagraph) => checkTitle(subParagraph))
+                  .join(`<div style="margin-bottom: 5px;"></div>`)
+              : checkTitle(paragraph)
+          )
+          .join("<hr />")}
+      </div>
+    `;
+  };
+
+  const formatAction = ({ actions, name, tags, content }) =>
+    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
+      ${formatActionHeader({ actions, name, tags })}
+      ${formatActionBody({ content })}
+    </div>`;
+
+  const structureActionContent = (action) => {
+    const content = [];
+    if (action.trigger) {
+      content.push({
+        title: "Trigger",
+        text: action.trigger,
+      });
+    }
+    if (action.requirements) {
+      content.push({
+        title: "Requirements",
+        text: action.requirements,
+      });
+    }
+    if (action.description) {
+      content.push(action.description);
+    }
+    if (action.failure) {
+      content.push({
+        title: "Failure",
+        text: action.failure,
+      });
+    }
+    return content;
+  };
+
+  const slugify = (string) =>
+    // borrowed from https://gist.github.com/codeguy/6684588
+    string
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
+  const strikeIndexToLabel = (strikeIndex) => {
+    switch (strikeIndex) {
+      case 0:
+        return "1st";
+      case 1:
+        return "2nd";
+      case 2:
+        return "3rd";
+    }
+  };
+
+  const createActionButton = ({
+    action,
+    modifier,
+    strikeIndex,
+    melee,
+    effect,
+  }) => {
+    const modifiers = melee ? meleeModifiers : rangedModifiers;
+
+    let id = slugify(action.name);
+    id += melee ? "-melee" : "-ranged";
+    if (effect) {
+      id += `-${slugify(effect.name)}`;
+    }
+    if (strikeIndex !== undefined) {
+      id += `-${strikeIndex}`;
+    }
+
+    let label =
+      strikeIndex !== undefined &&
+      action.strike &&
+      action.actions !== "Reactions"
+        ? strikeIndexToLabel(strikeIndex)
+        : action.name;
+    if (strikeIndex !== undefined || modifier) {
+      let appliedModifier = modifier ?? modifiers[strikeIndex].total;
+      if (effect) {
+        appliedModifier += effect.modifier.value;
+      }
+      label += ` (${modToString(appliedModifier)})`;
+    }
+
+    let disabled = false;
+    if (strikeIndex !== undefined) {
+      if (strikeIndex === 0) {
+        if ((action.tags ?? []).includes("Press")) {
+          disabled = true;
+        }
+      } else {
+        if (
+          action.actions === "ThreeActions" ||
+          (action.tags ?? []).includes("Open")
+        ) {
+          disabled = true;
+        } else if (strikeIndex === 2 && action.actions === "TwoActions") {
+          disabled = true;
+        }
+      }
+    }
+
+    const actionButton = {
+      id,
+      label,
+      disabled,
+      callback: () => {
+        if (action.name !== `${weapon.name} Strike`) {
+          ChatMessage.create({
+            user: game.user._id,
+            speaker: ChatMessage.getSpeaker(),
+            content: `
+              ${formatAction({
+                ...action,
+                content: structureActionContent(action),
+              })}
+            `,
+          });
+        }
+        if (strikeIndex !== undefined) {
+          strike({ strikeIndex, melee });
+        }
+      },
+      effect,
+    };
+
+    if (!actionButton.disabled) {
+      dialogButtons.push(actionButton);
+    }
+
+    return actionButton;
+  };
+
+  const createActionButtons = ({ action, melee, effect }) => {
+    const actionButtons = [];
+
+    const modifiers = melee ? meleeModifiers : rangedModifiers;
+
+    if (action.actions === "Reaction") {
+      actionButtons.push(
+        createActionButton({ action, strikeIndex: 0, melee, effect })
+      );
+    } else {
+      for (let strikeIndex = 0; strikeIndex < modifiers.length; strikeIndex++) {
+        actionButtons.push(
+          createActionButton({ action, strikeIndex, melee, effect })
+        );
+      }
+    }
+
+    return actionButtons;
+  };
+
+  const createDamageButton = ({ crit, dieSize, strength, effect }) => {
+    let id = crit ? "critical" : "damage";
+    id += `-${dieSize}`;
+    if (strength) {
+      id += "-strength";
+    }
+    if (effect) {
+      id += `-${slugify(effect.name)}`;
+    }
+
+    const damageButton = {
+      id,
+      label: crit ? `💥` : dieSize,
+      callback: () => damage({ crit, dieSize, strength }),
+      effect,
+    };
+
+    dialogButtons.push(damageButton);
+
+    return damageButton;
+  };
+
+  const formatButtons = (buttons) => {
+    let buttonFormat = "";
+    for (let i = 0; i < buttons.length; i++) {
+      const button = buttons[i];
+      buttonFormat += button.disabled
+        ? `
+          <div style="
+            margin-bottom: 5px;
+            ${i === buttons.length - 1 ? "" : "margin-right: 5px;"}
+            padding: 1px 6px;
+            border: 2px groove #f0f0e0;
+            border-radius: 3px;
+            text-align: center;
+            font-family: Signika, sans-serif;
+            font-size: 14px;
+            color: #4b4a44;
+            line-height: 28px;
+          ">
+            ${button.label}
+          </div>
+        `
+        : `
+          <button
+            class="dialog-button ${button.id}"
+            data-button="${button.id}"
+            style="
+              margin-bottom: 5px;
+              ${button.disabled ? "visibility: hidden;" : ""}
+            "
+          >${button.label}</button>
+        `;
+    }
+    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonFormat}</div>`;
+  };
+
+  const formatTitle = (title) => `
+    <div style="
+      display: flex;
+      justify-content: center;
+      margin-bottom: 5px;
+    "><strong>${title}</strong></div>
+  `;
+
+  const formatDialogAction = (action) => {
+    let actionFormat = "";
+
+    actionFormat += formatActionHeader(action);
+    actionFormat += formatTitle("Melee");
+    actionFormat += formatButtons(createActionButtons({ action, melee: true }));
+    actionFormat += formatTitle("Ranged");
+    actionFormat += formatButtons(
+      createActionButtons({ action, melee: false })
+    );
+
+    if (weapon.effects) {
+      for (const effect of weapon.effects) {
+        if (effect.modifier.stat === "attack") {
+          actionFormat += formatTitle(effect.name);
+          actionFormat += formatButtons(
+            createActionButtons({ action, effect })
+          );
+        }
+      }
+    }
+
+    return actionFormat;
+  };
+
+  const formatDialog = () => {
+    let dialogFormat = "";
+
+    if (weapon.strikeAction) {
+      dialogFormat += formatDialogAction({
+        actions: "OneAction",
+        name: `${weapon.name} Strike`,
+        strike: true,
+        tags: weapon.tags,
+      });
+    }
+
+    if (weapon.actions) {
+      for (const action of weapon.actions) {
+        dialogFormat += formatDialogAction(action);
+      }
+    }
+
+    if (weapon.dieSizes) {
+      dialogFormat += formatActionHeader({
+        actions: "Passive",
+        name: "Damage",
+      });
+      dialogFormat += [false, true]
+        .map((crit) =>
+          formatButtons(
+            weapon.dieSizes.map((dieSize) =>
+              createDamageButton({ crit, dieSize, strength: true })
+            )
+          )
+        )
+        .join(`<div style="margin-top: -5px"></div>`);
+      if (weapon.effects) {
+        for (const effect of weapon.effects) {
+          if (effect.modifier.stat === "damage") {
+            dialogFormat += formatTitle(effect.name);
+            dialogFormat += [false, true]
+              .map((crit) =>
+                formatButtons(
+                  weapon.dieSizes.map((dieSize) =>
+                    createDamageButton({ crit, dieSize, strength: true })
+                  )
+                )
+              )
+              .join(`<div style="margin-top: -5px"></div>`);
+          }
+        }
+      }
+    }
+
+    dialogFormat += `<div style="margin-top: -5px"></div>`;
+
+    return dialogFormat;
+  };
+
   const dialog = new Dialog(
     {
       title: " ",
-      content: `
-        ${weapon.actions
-          .map(
-            (action) => `
-              ${actionHeader(action)}
-              <div style="
-                display: flex;
-                justify-content: center;
-                margin-bottom: 5px;
-              "><strong>Melee</strong></div>
-              ${buttonFormat(
-                { ...action, name: action.name + " melee" },
-                meleeModifiers.map((modifier) => modifier.total)
-              )}
-              <div style="
-                display: flex;
-                justify-content: center;
-                margin-bottom: 5px;
-              "><strong>Ranged</strong></div>
-              ${buttonFormat(
-                { ...action, name: action.name + " ranged" },
-                rangedModifiers.map((modifier) => modifier.total)
-              )}
-            `
-          )
-          .join("")}
-        ${actionHeader({ actions: "Passive", name: "Damage" })}
-        <div class="dialog-buttons" style="margin-top: 5px;">
-          ${weapon.dieSizes
-            .map(
-              (dieSize) => `
-              <button
-                class="dialog-button damage-${dieSize}"
-                data-button="damage-${dieSize}"
-                style="margin-bottom:5px;"
-              >${dieSize}</button>
-            `
-            )
-            .join("")}
-        </div>
-      `,
+      content: formatDialog(),
       buttons: {},
     },
     { width: 300 }
   );
-  for (const dieSize of weapon.dieSizes) {
-    dialog.data.buttons[`critical-${dieSize}`] = {
-      label: "💥",
-      callback: () => {
-        damage({ crit: true, dieSize, strength: true });
-      },
-    };
-  }
   dialog.render(true);
-  for (const dieSize of weapon.dieSizes) {
-    dialog.data.buttons[`damage-${dieSize}`] = {
-      callback: () => {
-        damage({ crit: false, dieSize, strength: true });
-      },
+
+  for (const button of dialogButtons) {
+    dialog.data.buttons[button.id] = {
+      callback: button.callback,
     };
-  }
-  if (weapon.actions) {
-    for (const action of weapon.actions) {
-      for (let MAP = 0; MAP < 3; MAP++) {
-        dialog.data.buttons[`${slugify(action.name + " melee")}${MAP}`] = {
-          callback: () => {
-            ChatMessage.create({
-              user: game.user._id,
-              speaker: ChatMessage.getSpeaker(),
-              content: `
-                ${actionFormat(contentFormat(action))}
-              `,
-            });
-            if (action.attack) {
-              strike({ MAP, melee: true });
-            }
-          },
-        };
-        dialog.data.buttons[`${slugify(action.name + " ranged")}${MAP}`] = {
-          callback: () => {
-            ChatMessage.create({
-              user: game.user._id,
-              speaker: ChatMessage.getSpeaker(),
-              content: `
-                ${actionFormat(contentFormat(action))}
-              `,
-            });
-            if (action.attack) {
-              strike({ MAP, melee: false });
-            }
-          },
-        };
-      }
-    }
   }
 })();
