@@ -271,12 +271,11 @@ const weapon = {
             user: game.user._id,
             speaker: ChatMessage.getSpeaker(),
             content: `
-            
-            ${formatAction({
-              ...action,
-              content: structureActionContent(action),
-            })}
-          `,
+              ${formatAction({
+                ...action,
+                content: structureActionContent(action),
+              })}
+            `,
           });
         }
         if (strikeIndex !== undefined) {
@@ -381,26 +380,31 @@ const weapon = {
     "><strong>${title}</strong></div>
   `;
 
+  const formatDialogAction = (action) => {
+    let actionFormat = "";
+
+    actionFormat += formatActionHeader(action);
+    actionFormat += formatButtons(createActionButtons({ action }));
+
+    if (weapon.effects) {
+      for (const effect of weapon.effects) {
+        if (effect.modifier.stat === "attack") {
+          actionFormat += formatTitle(effect.name);
+          actionFormat += formatButtons(
+            createActionButtons({ action, effect })
+          );
+        }
+      }
+    }
+
+    return actionFormat;
+  };
+
   const formatDialog = () => {
     let dialogFormat = "";
 
-    const formatDialogAction = (action) => {
-      dialogFormat += formatActionHeader(action);
-      dialogFormat += formatButtons(createActionButtons({ action }));
-      if (weapon.effects) {
-        for (const effect of weapon.effects) {
-          if (effect.modifier.stat === "attack") {
-            dialogFormat += formatTitle(effect.name);
-            dialogFormat += formatButtons(
-              createActionButtons({ action, effect })
-            );
-          }
-        }
-      }
-    };
-
     if (weapon.strikeAction) {
-      formatDialogAction({
+      dialogFormat += formatDialogAction({
         actions: "OneAction",
         name: `${weapon.name} Strike`,
         strike: true,
@@ -410,8 +414,7 @@ const weapon = {
 
     if (weapon.actions) {
       for (const action of weapon.actions) {
-        dialogFormat += formatActionHeader(action);
-        dialogFormat += formatButtons(createActionButtons({ action }));
+        dialogFormat += formatDialogAction(action);
       }
     }
 
