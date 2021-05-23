@@ -1,7 +1,8 @@
 const weapon = {
   name: "Halberd",
   tags: ["Reach", "Versatile S"],
-  damageTypes: ["Piercing", "Slashing"],
+  strikeAction: true,
+  damage: ["Piercing", "Slashing"],
   criticalEffects: [
     {
       name: "Shock",
@@ -14,10 +15,52 @@ const weapon = {
       },
     },
   ],
-  actions: [],
 };
+
 (async () => {
-  const actionHeader = ({ actions, name, tags }) => `
+  const strikeItem = (actor.data.data.actions ?? [])
+    .filter((action) => action.type === "strike")
+    .find((strike) => strike.name === weapon.name);
+
+  const modifiers = strikeItem.variants.map((variant) => {
+    let modifier = strikeItem.totalModifier;
+    const splitLabel = variant.label.split(" ");
+    if (splitLabel[0] === "MAP") {
+      modifier += parseInt(splitLabel[1]);
+    }
+    return modifier;
+  });
+
+  const dialogButtons = [];
+
+  const slugify = (string) =>
+    // borrowed from https://gist.github.com/codeguy/6684588
+    string
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
+  const strike = (strikeIndex) => {
+    const options = [
+      ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
+      ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
+    ];
+    strikeItem.variants[strikeIndex].roll({ event, options });
+  };
+
+  const executeWithEffect = async ({ effect, callback }) => {
+    await actor.addCustomModifier(
+      effect.modifier.stat,
+      effect.name,
+      effect.modifier.value,
+      effect.modifier.type ?? "untyped"
+    );
+    callback();
+    await actor.removeCustomModifier(effect.modifier.stat, effect.name);
+  };
+
+  const formatActionHeader = ({ actions, name, tags }) => `
     <hr style="margin-top: 0; margin-bottom: 3px;" />
     <header style="display: flex; font-size: 14px">
       <img
@@ -49,7 +92,8 @@ const weapon = {
         : `<hr style="margin-top: 3px;" />`
     }
   `;
-  const actionBody = ({ content }) => {
+
+  const formatActionBody = ({ content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
@@ -68,11 +112,14 @@ const weapon = {
       </div>
     `;
   };
-  const actionFormat = ({ actions, name, tags, content }) =>
+
+  const formatAction = ({ actions, name, tags, content }) =>
     `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
-      ${actionHeader({ actions, name, tags })}${actionBody({ content })}
+      ${formatActionHeader({ actions, name, tags })}
+      ${formatActionBody({ content })}
     </div>`;
-  const contentFormat = (action) => {
+
+  const structureActionContent = (action) => {
     const content = [];
     if (action.trigger) {
       content.push({
@@ -95,96 +142,24 @@ const weapon = {
         text: action.failure,
       });
     }
-    return {
-      actions: action.actions,
-      name: action.name,
-      tags: action.tags,
-      content: content,
-    };
+    return content;
   };
-  const slugify = (string) =>
-    // borrowed from https://gist.github.com/codeguy/6684588
-    string
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-  const strikeItem = (actor.data.data.actions ?? [])
-    .filter((action) => action.type === "strike")
-    .find((strike) => strike.name === weapon.name);
-  const modifiers = strikeItem.variants.map((variant) => {
-    let modifier = strikeItem.totalModifier;
-    const splitLabel = variant.label.split(" ");
-    if (splitLabel[0] === "MAP") {
-      modifier += parseInt(splitLabel[1]);
-    }
-    return modifier;
-  });
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
-  const buttonFormat = (action, modifiers) => {
-    const buttons = ["", "", ""];
-    if (action.attack) {
-      if (action.actions === "Reaction") {
-        buttons[0] = modifiers
-          ? `${action.name} (${modToString(modifiers[0])})`
-          : action.name;
-      } else {
-        if (!(action.tags ?? []).includes("Press")) {
-          buttons[0] = modifiers ? `1st (${modToString(modifiers[0])})` : "1st";
-        }
-        if (
-          !(
-            action.actions === "ThreeActions" ||
-            (action.tags ?? []).includes("Open")
-          )
-        ) {
-          buttons[1] = modifiers ? `2nd (${modToString(modifiers[1])})` : "2nd";
-          if (action.actions !== "TwoActions") {
-            buttons[2] = modifiers
-              ? `3rd (${modToString(modifiers[2])})`
-              : "3rd";
-          }
-        }
-      }
-    } else {
-      buttons[0] = action.name;
-    }
-    let buttonHTML = "";
-    for (let i = 0; i < buttons.length; i++) {
-      if (buttons[i]) {
-        buttonHTML += `
-            <button
-              class="dialog-button ${slugify(action.name)}${i}"
-              data-button="${slugify(action.name)}${i}"
-              style="margin-bottom:5px;"
-            >${buttons[i]}</button>
-          `;
-      }
-    }
-    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonHTML}</div>`;
-  };
-  const strike = (MAP) => {
-    const options = [
-      ...actor.getRollOptions(["all", "str-based", "attack", "attack-roll"]),
-      ...(weapon.tags ? weapon.tags.map((tag) => slugify(tag)) : []),
-    ];
-    strikeItem.variants[MAP].roll({ event, options });
-  };
+
   const damage = ({ crit, damageType }) => {
-    console.log(strikeItem);
     const options = actor.getRollOptions([
       "all",
       "str-based",
       "damage",
       "damage-roll",
     ]);
+
     if (damageType) {
       const versatileTag = `versatile-${damageType}`;
       if ((weapon.tags ?? []).find((tag) => slugify(tag) === versatileTag)) {
         options.push(versatileTag);
       }
     }
+
     if (crit) {
       strikeItem.critical({
         event,
@@ -212,14 +187,14 @@ const weapon = {
                   ],
                   actor,
                   data: actor.data.data,
-                  title: `${actionFormat(criticalEffectAction)}<hr />`,
+                  title: `${formatAction(criticalEffectAction)}<hr />`,
                   speaker: ChatMessage.getSpeaker(),
                 });
               } else {
                 ChatMessage.create({
                   user: game.user._id,
                   speaker: ChatMessage.getSpeaker(),
-                  content: actionFormat(criticalEffectAction),
+                  content: formatAction(criticalEffectAction),
                 });
               }
             }
@@ -230,154 +205,279 @@ const weapon = {
       strikeItem.damage({ event, options });
     }
   };
-  const strikeAction = {
-    actions: "OneAction",
-    name: `${weapon.name} Strike`,
-    attack: true,
-    tags: weapon.tags,
+
+  const modToString = (modifier) =>
+    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+
+  const strikeIndexToLabel = (strikeIndex) => {
+    switch (strikeIndex) {
+      case 0:
+        return "1st";
+      case 1:
+        return "2nd";
+      case 2:
+        return "3rd";
+    }
   };
+
+  const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
+    let id = slugify(action.name);
+    if (effect) {
+      id += `-${slugify(effect.name)}`;
+    }
+    if (strikeIndex !== undefined) {
+      id += `-${strikeIndex}`;
+    }
+
+    let label =
+      strikeIndex !== undefined &&
+      action.strike &&
+      action.actions !== "Reactions"
+        ? strikeIndexToLabel(strikeIndex)
+        : action.name;
+    if (strikeIndex !== undefined || modifier) {
+      let appliedModifier = modifier ?? modifiers[strikeIndex];
+      if (effect) {
+        appliedModifier += effect.modifier.value;
+      }
+      label += ` (${modToString(appliedModifier)})`;
+    }
+
+    let disabled = false;
+    if (strikeIndex !== undefined) {
+      if (strikeIndex === 0) {
+        if ((action.tags ?? []).includes("Press")) {
+          disabled = true;
+        }
+      } else {
+        if (
+          action.actions === "ThreeActions" ||
+          (action.tags ?? []).includes("Open")
+        ) {
+          disabled = true;
+        } else if (strikeIndex === 2 && action.actions === "TwoActions") {
+          disabled = true;
+        }
+      }
+    }
+
+    const actionButton = {
+      id,
+      label,
+      disabled,
+      callback: () => {
+        if (action.name !== `${weapon.name} Strike`) {
+          ChatMessage.create({
+            user: game.user._id,
+            speaker: ChatMessage.getSpeaker(),
+            content: `
+            
+            ${formatAction({
+              ...action,
+              content: structureActionContent(action),
+            })}
+          `,
+          });
+        }
+        if (strikeIndex !== undefined) {
+          strike(strikeIndex);
+        }
+      },
+      effect,
+    };
+
+    if (!actionButton.disabled) {
+      dialogButtons.push(actionButton);
+    }
+
+    return actionButton;
+  };
+
+  const createActionButtons = ({ action, effect }) => {
+    const actionButtons = [];
+
+    if (action.actions === "Reaction") {
+      actionButtons.push(
+        createActionButton({ action, strikeIndex: 0, effect })
+      );
+    } else {
+      for (let strikeIndex = 0; strikeIndex < modifiers.length; strikeIndex++) {
+        actionButtons.push(createActionButton({ action, strikeIndex, effect }));
+      }
+    }
+
+    return actionButtons;
+  };
+
+  const createDamageButton = ({ crit, damageType, effect }) => {
+    let id = crit ? "critical" : "damage";
+    if (effect) {
+      id += `-${slugify(effect.name)}`;
+    }
+    if (damageType) {
+      id += `-${damageType}`;
+    }
+
+    const damageButton = {
+      id,
+      label: crit ? `💥` : `✔️`,
+      callback: () => damage({ crit, damageType }),
+      effect,
+    };
+
+    dialogButtons.push(damageButton);
+
+    return damageButton;
+  };
+
+  const createDamageButtons = ({ damageType, effect }) => {
+    const damageButtons = [
+      createDamageButton({ crit: false, damageType, effect }),
+      createDamageButton({ crit: true, damageType, effect }),
+    ];
+    return damageButtons;
+  };
+
+  const formatButtons = (buttons) => {
+    let buttonFormat = "";
+    for (let i = 0; i < buttons.length; i++) {
+      const button = buttons[i];
+      buttonFormat += button.disabled
+        ? `
+          <div style="
+            margin-bottom: 5px;
+            ${i === buttons.length - 1 ? "" : "margin-right: 5px;"}
+            padding: 1px 6px;
+            border: 2px groove #f0f0e0;
+            border-radius: 3px;
+            text-align: center;
+            font-family: Signika, sans-serif;
+            font-size: 14px;
+            color: #4b4a44;
+            line-height: 28px;
+          ">
+            ${button.label}
+          </div>
+        `
+        : `
+          <button
+            class="dialog-button ${button.id}"
+            data-button="${button.id}"
+            style="
+              margin-bottom: 5px;
+              ${button.disabled ? "visibility: hidden;" : ""}
+            "
+          >${button.label}</button>
+        `;
+    }
+    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonFormat}</div>`;
+  };
+
+  const formatTitle = (title) => `
+    <div style="
+      display: flex;
+      justify-content: center;
+      margin-bottom: 5px;
+    "><strong>${title}</strong></div>
+  `;
+
+  const formatDialog = () => {
+    let dialogFormat = "";
+
+    const formatDialogAction = (action) => {
+      dialogFormat += formatActionHeader(action);
+      dialogFormat += formatButtons(createActionButtons({ action }));
+      if (weapon.effects) {
+        for (const effect of weapon.effects) {
+          if (effect.modifier.stat === "attack") {
+            dialogFormat += formatTitle(effect.name);
+            dialogFormat += formatButtons(
+              createActionButtons({ action, effect })
+            );
+          }
+        }
+      }
+    };
+
+    if (weapon.strikeAction) {
+      formatDialogAction({
+        actions: "OneAction",
+        name: `${weapon.name} Strike`,
+        strike: true,
+        tags: weapon.tags,
+      });
+    }
+
+    if (weapon.actions) {
+      for (const action of weapon.actions) {
+        dialogFormat += formatActionHeader(action);
+        dialogFormat += formatButtons(createActionButtons({ action }));
+      }
+    }
+
+    if (weapon.damage) {
+      dialogFormat += formatActionHeader({
+        actions: "Passive",
+        name: "Damage",
+      });
+      if (Array.isArray(weapon.damage)) {
+        for (const damageType of weapon.damage) {
+          dialogFormat += formatTitle(damageType);
+          dialogFormat += formatButtons(
+            createDamageButtons({
+              damageType: damageType.charAt(0).toLowerCase(),
+            })
+          );
+        }
+        if (weapon.effects) {
+          for (const effect of weapon.effects) {
+            if (effect.modifier.stat === "damage") {
+              dialogFormat += formatTitle(effect.name.toUpperCase());
+              for (const damageType of weapon.damage) {
+                dialogFormat += formatTitle(damageType);
+                dialogFormat += formatButtons(
+                  createDamageButtons({
+                    damageType: damageType.charAt(0).toLowerCase(),
+                    effect,
+                  })
+                );
+              }
+            }
+          }
+        }
+      } else {
+        dialogFormat += formatButtons(createDamageButtons({}));
+        if (weapon.effects) {
+          for (const effect of weapon.effects) {
+            if (effect.modifier.stat === "damage") {
+              dialogFormat += formatTitle(effect.name);
+              dialogFormat += formatButtons(createDamageButtons({ effect }));
+            }
+          }
+        }
+      }
+    }
+
+    dialogFormat += `<div style="margin-top: -5px"></div>`;
+
+    return dialogFormat;
+  };
+
   const dialog = new Dialog(
     {
       title: " ",
-      content: `
-        ${[strikeAction, ...(weapon.actions ?? [])]
-          .map(
-            (action) =>
-              `${actionHeader(action)}${buttonFormat(action, modifiers)}`
-          )
-          .join("")}
-        ${actionHeader({ actions: "Passive", name: "Damage" })}
-        ${
-          weapon.damageTypes
-            ? `
-              ${weapon.damageTypes
-                .slice(0, -1)
-                .map(
-                  (damageType) => `
-                    <div style="
-                      display: flex;
-                      justify-content: center;
-                      margin-bottom: 5px;
-                    "><strong>${damageType}</strong></div>
-                    <div class="dialog-buttons">
-                      <button
-                        class="dialog-button damage-${damageType
-                          .charAt(0)
-                          .toLowerCase()}"
-                        data-button="damage-${damageType
-                          .charAt(0)
-                          .toLowerCase()}"
-                        style="margin-bottom:5px;"
-                      >
-                        ✔️
-                      </button>
-                      <button
-                        class="dialog-button critical-${damageType
-                          .charAt(0)
-                          .toLowerCase()}"
-                        data-button="critical-${damageType
-                          .charAt(0)
-                          .toLowerCase()}"
-                        style="margin-bottom:5px;"
-                      >
-                        💥
-                      </button>
-                    </div>
-                  `
-                )
-                .join("")}
-              <div style="
-                display: flex;
-                justify-content: center;
-                margin-bottom: 5px;
-              "><strong>${
-                weapon.damageTypes[weapon.damageTypes.length - 1]
-              }</strong></div>
-              `
-            : ""
-        }
-      `,
+      content: formatDialog(),
       buttons: {},
     },
     { width: 300 }
   );
-  if (weapon.damageTypes) {
-    const lastDamageType = weapon.damageTypes[weapon.damageTypes.length - 1]
-      .charAt(0)
-      .toLowerCase();
-    dialog.data.buttons[`damage-${lastDamageType}`] = {
-      label: "✔️",
-      callback: () => {
-        damage({ crit: false, damageType: lastDamageType });
-      },
-    };
-    dialog.data.buttons[`critical-${lastDamageType}`] = {
-      label: "💥",
-      callback: () => {
-        damage({ crit: true, damageType: lastDamageType });
-      },
-    };
-  } else {
-    dialog.data.buttons.damage = {
-      label: "✔️",
-      callback: () => {
-        damage({ crit: false });
-      },
-    };
-    dialog.data.buttons.critical = {
-      label: "💥",
-      callback: () => {
-        damage({ crit: true });
-      },
-    };
-  }
   dialog.render(true);
-  for (let MAP = 0; MAP < 3; MAP++) {
-    dialog.data.buttons[`${slugify(strikeAction.name)}${MAP}`] = {
-      callback: () => {
-        strike(MAP);
-      },
+
+  for (const button of dialogButtons) {
+    dialog.data.buttons[button.id] = {
+      callback: button.effect
+        ? () => executeWithEffect(button)
+        : button.callback,
     };
-  }
-  if (weapon.actions) {
-    for (const action of weapon.actions) {
-      for (let MAP = 0; MAP < 3; MAP++) {
-        dialog.data.buttons[`${slugify(action.name)}${MAP}`] = {
-          callback: () => {
-            ChatMessage.create({
-              user: game.user._id,
-              speaker: ChatMessage.getSpeaker(),
-              content: `
-                ${actionFormat(contentFormat(action))}
-              `,
-            });
-            if (action.attack) {
-              strike(MAP);
-            }
-          },
-        };
-      }
-    }
-  }
-  if (weapon.damageTypes) {
-    for (const fullDamageType of weapon.damageTypes.slice(0, -1)) {
-      const damageType = fullDamageType.charAt(0).toLowerCase();
-      dialog.data.buttons[`damage-${damageType}`] = {
-        callback: () => {
-          damage({
-            crit: false,
-            damageType: damageType,
-          });
-        },
-      };
-      dialog.data.buttons[`critical-${damageType}`] = {
-        callback: () => {
-          damage({
-            crit: true,
-            damageType: damageType,
-          });
-        },
-      };
-    }
   }
 })();
