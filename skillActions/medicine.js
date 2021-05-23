@@ -2,7 +2,7 @@ const actions = [
   (godless) => ({
     actions: "Passive",
     name: "Treat Wounds",
-    buttonText: godless ? "Self" : "Standard",
+    buttonLabel: godless ? "Self" : "Standard",
     healing: godless
       ? [
           "2d8+15",
@@ -26,7 +26,7 @@ const actions = [
   (godless) => ({
     actions: "OneAction",
     name: "Battle Medicine",
-    buttonText: godless ? "Self" : "Standard",
+    buttonLabel: godless ? "Self" : "Standard",
     healing: godless ? "2d8+20" : "2d8+15",
     tags: ["Healing", "Manipulate"],
     content: [
@@ -120,8 +120,48 @@ const actions = [
     ],
   },
 ];
+
 (async () => {
-  const actionHeader = ({ actions, name, tags }) => `
+  const dialogButtons = [];
+
+  const skillRoll = ({ name, skill, tags }) => {
+    const options = [
+      ...actor.getRollOptions([
+        "all",
+        "wis-based",
+        "skill-check",
+        skill.toLowerCase(),
+      ]),
+      ...(tags ? tags.map((tag) => slugify(tag)) : []),
+      ...[`action:${slugify(name)}`],
+    ];
+    actor.data.data.skills[
+      Object.entries(actor.data.data.skills).find(
+        (entry) => entry[1].name === skill.toLowerCase()
+      )[0]
+    ].roll({ event, options });
+  };
+
+  const chatMessage = (content) => {
+    ChatMessage.create({
+      user: game.user._id,
+      speaker: ChatMessage.getSpeaker(),
+      content,
+    });
+  };
+
+  const damageRoll = (content, damage) => {
+    DicePF2e.damageRoll({
+      event,
+      parts: [damage],
+      actor,
+      data: actor.data.data,
+      title: `${content}<hr />`,
+      speaker: ChatMessage.getSpeaker(),
+    });
+  };
+
+  const formatActionHeader = ({ actions, name, tags }) => `
     <hr style="margin-top: 0; margin-bottom: 3px;" />
     <header style="display: flex; font-size: 14px">
       <img
@@ -153,7 +193,8 @@ const actions = [
         : `<hr style="margin-top: 3px;" />`
     }
   `;
-  const actionBody = ({ content }) => {
+
+  const formatActionBody = ({ content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
@@ -172,10 +213,34 @@ const actions = [
       </div>
     `;
   };
-  const actionFormat = ({ actions, name, tags, content }) =>
+
+  const formatAction = ({ actions, name, tags, content }) =>
     `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
-      ${actionHeader({ actions, name, tags })}${actionBody({ content })}
+      ${formatActionHeader({ actions, name, tags })}
+      ${formatActionBody({ content })}
     </div>`;
+
+  const executeAction = (action) => {
+    if (action.damage || action.healing) {
+      if (Array.isArray(action.damage ?? action.healing)) {
+        for (const roll of action.damage ?? action.healing) {
+          if (typeof roll === "object") {
+            damageRoll(formatAction(roll.action), roll.roll);
+          } else {
+            damageRoll(formatAction(action), roll);
+          }
+        }
+      } else {
+        damageRoll(formatAction(action), action.damage ?? action.healing);
+      }
+    } else {
+      chatMessage(formatAction(action));
+    }
+    if (action.skill) {
+      skillRoll(action);
+    }
+  };
+
   const slugify = (string) =>
     // borrowed from https://gist.github.com/codeguy/6684588
     string
@@ -183,123 +248,72 @@ const actions = [
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
-  const buttonID = ({ name, buttonText }) =>
-    `${slugify(name)}${buttonText ? slugify(buttonText) : ""}`;
-  const actionButton = ({ name, buttonText }) => `
-    <button
-      class="dialog-button ${buttonID({ name, buttonText })}"
-      data-button="${buttonID({ name, buttonText })}"
-      style="margin-bottom:5px;"
-    >
-      ${buttonText ?? name}
-    </button>
-  `;
-  const skillRoll = ({ name, skill, tags }) => {
-    const options = [
-      ...actor.getRollOptions([
-        "all",
-        "wis-based",
-        "skill-check",
-        skill.toLowerCase(),
-      ]),
-      ...(tags ? tags.map((tag) => slugify(tag)) : []),
-      ...[`action:${slugify(name)}`],
-    ];
-    actor.data.data.skills[
-      Object.entries(actor.data.data.skills).find(
-        (entry) => entry[1].name === skill.toLowerCase()
-      )[0]
-    ].roll({ event, options });
+
+  const getButtonID = ({ name, buttonLabel }) =>
+    `${slugify(name)}-${buttonLabel ? slugify(buttonLabel) : ""}`;
+
+  const createActionButton = (action) => {
+    const actionButton = {
+      id: getButtonID(action),
+      label: action.buttonLabel ?? action.name,
+      callback: () => executeAction(action),
+    };
+
+    dialogButtons.push(actionButton);
+
+    return actionButton;
   };
-  const chatMessage = (content) => {
-    ChatMessage.create({
-      user: game.user._id,
-      speaker: ChatMessage.getSpeaker(),
-      content,
-    });
+
+  const formatButtons = (buttons) => {
+    let buttonFormat = "";
+    for (const button of buttons) {
+      buttonFormat += `
+        <button
+          class="dialog-button ${button.id}"
+          data-button="${button.id}"
+          style="margin-bottom:5px;"
+        >
+          ${button.label}
+        </button>
+      `;
+    }
+    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonFormat}</div>`;
   };
-  const damageRoll = (content, damage) => {
-    DicePF2e.damageRoll({
-      event,
-      parts: [damage],
-      actor,
-      data: actor.data.data,
-      title: `${content}<hr />`,
-      speaker: ChatMessage.getSpeaker(),
-    });
-  };
-  const execute = (action) => {
-    if (action.damage || action.healing) {
-      if (Array.isArray(action.damage ?? action.healing)) {
-        for (const roll of action.damage ?? action.healing) {
-          if (typeof roll === "object") {
-            damageRoll(actionFormat(roll.action), roll.roll);
-          } else {
-            damageRoll(actionFormat(action), roll);
-          }
-        }
+
+  const formatDialog = () => {
+    let dialogFormat = "";
+
+    for (const action of actions) {
+      if (typeof action === "function") {
+        dialogFormat += formatActionHeader(action());
+        dialogFormat += formatButtons([
+          createActionButton(action()),
+          createActionButton(action(true)),
+        ]);
       } else {
-        damageRoll(actionFormat(action), action.damage ?? action.healing);
+        dialogFormat += formatActionHeader(action);
+        dialogFormat += formatButtons([createActionButton(action)]);
       }
-    } else {
-      chatMessage(actionFormat(action));
     }
-    if (action.skill) {
-      skillRoll(action);
-    }
+
+    dialogFormat += `<div style="margin-top: -5px"></div>`;
+
+    return dialogFormat;
   };
-  const lastAction = actions[actions.length - 1];
+
   const dialog = new Dialog(
     {
       title: " ",
-      content: `${actions
-        .map((action, index) =>
-          index < actions.length - 1
-            ? typeof action === "function"
-              ? `${actionHeader(action())}
-                ${`<div class="dialog-buttons">
-                    ${actionButton(action())}
-                    ${actionButton(action(true))}
-                  </div>`}`
-              : `${actionHeader(action)}
-                ${`<div class="dialog-buttons">
-                    ${actionButton(action)}
-                  </div>`}`
-            : ""
-        )
-        .join("")}
-        ${actionHeader(lastAction)}
-      `,
+      content: formatDialog(),
       buttons: {},
     },
     { width: 200 }
   );
-  const setButtons = (action) => {
-    if (typeof action === "function") {
-      dialog.data.buttons[buttonID(action())] = {
-        label: action().buttonText ?? action().name,
-        callback: () => {
-          execute(action());
-        },
-      };
-      dialog.data.buttons[buttonID(action(true))] = {
-        label: action(true).buttonText ?? action(true).name,
-        callback: () => {
-          execute(action(true));
-        },
-      };
-    } else {
-      dialog.data.buttons[buttonID(action)] = {
-        label: action.buttonText ?? action.name,
-        callback: () => {
-          execute(action);
-        },
-      };
-    }
-  };
-  setButtons(lastAction);
   dialog.render(true);
-  for (const action of actions.slice(0, -1)) {
-    setButtons(action);
+
+  for (const button of dialogButtons) {
+    dialog.data.buttons[button.id] = {
+      callback: button.callback,
+    };
   }
 })();
