@@ -275,11 +275,11 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
           user: game.user._id,
           speaker: ChatMessage.getSpeaker(),
           content: `
-              ${formatAction({
-                ...action,
-                content: structureActionContent(action),
-              })}
-            `,
+            ${formatAction({
+              ...action,
+              content: structureActionContent(action),
+            })}
+          `,
         });
       }
       if (strikeIndex !== undefined) {
