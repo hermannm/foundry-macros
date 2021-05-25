@@ -121,199 +121,198 @@ const actions = [
   },
 ];
 
-(async () => {
-  const dialogButtons = [];
+const dialogButtons = [];
 
-  const skillRoll = ({ name, skill, tags }) => {
-    const options = [
-      ...actor.getRollOptions([
-        "all",
-        "wis-based",
-        "skill-check",
-        skill.toLowerCase(),
-      ]),
-      ...(tags ? tags.map((tag) => slugify(tag)) : []),
-      ...[`action:${slugify(name)}`],
-    ];
-    actor.data.data.skills[
-      Object.entries(actor.data.data.skills).find(
-        (entry) => entry[1].name === skill.toLowerCase()
-      )[0]
-    ].roll({ event, options });
-  };
+const skillRoll = ({ name, skill, tags }) => {
+  const options = [
+    ...actor.getRollOptions([
+      "all",
+      "wis-based",
+      "skill-check",
+      skill.toLowerCase(),
+    ]),
+    ...(tags ? tags.map((tag) => slugify(tag)) : []),
+    ...[`action:${slugify(name)}`],
+  ];
+  actor.data.data.skills[
+    Object.entries(actor.data.data.skills).find(
+      (entry) => entry[1].name === skill.toLowerCase()
+    )[0]
+  ].roll({ event, options });
+};
 
-  const chatMessage = (content) => {
-    ChatMessage.create({
-      user: game.user._id,
-      speaker: ChatMessage.getSpeaker(),
-      content,
-    });
-  };
+const chatMessage = (content) => {
+  ChatMessage.create({
+    user: game.user._id,
+    speaker: ChatMessage.getSpeaker(),
+    content,
+  });
+};
 
-  const damageRoll = (content, damage) => {
-    DicePF2e.damageRoll({
-      event,
-      parts: [damage],
-      actor,
-      data: actor.data.data,
-      title: `${content}<hr />`,
-      speaker: ChatMessage.getSpeaker(),
-    });
-  };
+const damageRoll = (content, damage) => {
+  DicePF2e.damageRoll({
+    event,
+    parts: [damage],
+    actor,
+    data: actor.data.data,
+    title: `${content}<hr />`,
+    speaker: ChatMessage.getSpeaker(),
+  });
+};
 
-  const formatActionHeader = ({ actions, name, tags }) => `
-    <hr style="margin-top: 0; margin-bottom: 3px;" />
-    <header style="display: flex; font-size: 14px">
-      <img
-        style="flex: 0 0 36px; margin-right: 5px;"
-        src="systems/pf2e/icons/actions/${actions}.webp"
-        title="${name}"
-        width="36"
-        height="36"
-      >
-      <h3 style="flex: 1; line-height: 36px; margin: 0;">
-        ${name}
-      </h3>
-    </header>
-    ${
-      tags
-        ? `
-          <hr style="margin-top: 3px; margin-bottom: 1px;" />
-          <div class="tags" style="
-            margin-bottom: 5px;
-          ">
-            ${tags
-              .map(
-                (tag) => `
-                  <span class="tag tag_alt"">${tag}</span>`
-              )
-              .join(" ")}
-          </div>
-        `
-        : `<hr style="margin-top: 3px;" />`
-    }
+const formatActionHeader = ({ actions, name, tags }) => `
+  <hr style="margin-top: 0; margin-bottom: 3px;" />
+  <header style="display: flex; font-size: 14px">
+    <img
+      style="flex: 0 0 36px; margin-right: 5px;"
+      src="systems/pf2e/icons/actions/${actions}.webp"
+      title="${name}"
+      width="36"
+      height="36"
+    >
+    <h3 style="flex: 1; line-height: 36px; margin: 0;">
+      ${name}
+    </h3>
+  </header>
+  ${
+    tags
+      ? `
+        <hr style="margin-top: 3px; margin-bottom: 1px;" />
+        <div class="tags" style="
+          margin-bottom: 5px;
+        ">
+          ${tags
+            .map(
+              (tag) => `
+                <span class="tag tag_alt"">${tag}</span>`
+            )
+            .join(" ")}
+        </div>
+      `
+      : `<hr style="margin-top: 3px;" />`
+  }
+`;
+
+const formatActionBody = ({ content }) => {
+  const checkTitle = (paragraph) =>
+    typeof paragraph === "object"
+      ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
+      : paragraph;
+  return `
+    <div style="font-weight: 500;">
+      ${content
+        .map((paragraph) =>
+          Array.isArray(paragraph)
+            ? paragraph
+                .map((subParagraph) => checkTitle(subParagraph))
+                .join(`<div style="margin-bottom: 5px;"></div>`)
+            : checkTitle(paragraph)
+        )
+        .join("<hr />")}
+    </div>
   `;
+};
 
-  const formatActionBody = ({ content }) => {
-    const checkTitle = (paragraph) =>
-      typeof paragraph === "object"
-        ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
-        : paragraph;
-    return `
-      <div style="font-weight: 500;">
-        ${content
-          .map((paragraph) =>
-            Array.isArray(paragraph)
-              ? paragraph
-                  .map((subParagraph) => checkTitle(subParagraph))
-                  .join(`<div style="margin-bottom: 5px;"></div>`)
-              : checkTitle(paragraph)
-          )
-          .join("<hr />")}
-      </div>
-    `;
-  };
+const formatAction = ({ actions, name, tags, content }) => `
+  <div style="font-size: 14px; line-height: 16.8px; color: #191813;">
+    ${formatActionHeader({ actions, name, tags })}
+    ${formatActionBody({ content })}
+  </div>
+`;
 
-  const formatAction = ({ actions, name, tags, content }) =>
-    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
-      ${formatActionHeader({ actions, name, tags })}
-      ${formatActionBody({ content })}
-    </div>`;
-
-  const executeAction = (action) => {
-    if (action.damage || action.healing) {
-      if (Array.isArray(action.damage ?? action.healing)) {
-        for (const roll of action.damage ?? action.healing) {
-          if (typeof roll === "object") {
-            damageRoll(formatAction(roll.action), roll.roll);
-          } else {
-            damageRoll(formatAction(action), roll);
-          }
+const executeAction = (action) => {
+  if (action.damage || action.healing) {
+    if (Array.isArray(action.damage ?? action.healing)) {
+      for (const roll of action.damage ?? action.healing) {
+        if (typeof roll === "object") {
+          damageRoll(formatAction(roll.action), roll.roll);
+        } else {
+          damageRoll(formatAction(action), roll);
         }
-      } else {
-        damageRoll(formatAction(action), action.damage ?? action.healing);
       }
     } else {
-      chatMessage(formatAction(action));
+      damageRoll(formatAction(action), action.damage ?? action.healing);
     }
-    if (action.skill) {
-      skillRoll(action);
-    }
-  };
-
-  const slugify = (string) =>
-    // borrowed from https://gist.github.com/codeguy/6684588
-    string
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-
-  const getButtonID = ({ name, buttonLabel }) =>
-    `${slugify(name)}-${buttonLabel ? slugify(buttonLabel) : ""}`;
-
-  const createActionButton = (action) => {
-    const actionButton = {
-      id: getButtonID(action),
-      label: action.buttonLabel ?? action.name,
-      callback: () => executeAction(action),
-    };
-
-    dialogButtons.push(actionButton);
-
-    return actionButton;
-  };
-
-  const formatButtons = (buttons) => {
-    let buttonFormat = "";
-    for (const button of buttons) {
-      buttonFormat += `
-        <button
-          class="dialog-button ${button.id}"
-          data-button="${button.id}"
-          style="margin-bottom:5px;"
-        >
-          ${button.label}
-        </button>
-      `;
-    }
-    return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonFormat}</div>`;
-  };
-
-  const formatDialog = () => {
-    let dialogFormat = "";
-
-    for (const action of actions) {
-      if (typeof action === "function") {
-        dialogFormat += formatActionHeader(action());
-        dialogFormat += formatButtons([
-          createActionButton(action()),
-          createActionButton(action(true)),
-        ]);
-      } else {
-        dialogFormat += formatActionHeader(action);
-        dialogFormat += formatButtons([createActionButton(action)]);
-      }
-    }
-
-    dialogFormat += `<div style="margin-top: -5px"></div>`;
-
-    return dialogFormat;
-  };
-
-  const dialog = new Dialog(
-    {
-      title: " ",
-      content: formatDialog(),
-      buttons: {},
-    },
-    { width: 200 }
-  );
-  dialog.render(true);
-
-  for (const button of dialogButtons) {
-    dialog.data.buttons[button.id] = {
-      callback: button.callback,
-    };
+  } else {
+    chatMessage(formatAction(action));
   }
-})();
+  if (action.skill) {
+    skillRoll(action);
+  }
+};
+
+const slugify = (string) =>
+  // borrowed from https://gist.github.com/codeguy/6684588
+  string
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const getButtonID = ({ name, buttonLabel }) =>
+  `${slugify(name)}-${buttonLabel ? slugify(buttonLabel) : ""}`;
+
+const createActionButton = (action) => {
+  const actionButton = {
+    id: getButtonID(action),
+    label: action.buttonLabel ?? action.name,
+    callback: () => executeAction(action),
+  };
+
+  dialogButtons.push(actionButton);
+
+  return actionButton;
+};
+
+const formatButtons = (buttons) => {
+  let buttonFormat = "";
+  for (const button of buttons) {
+    buttonFormat += `
+      <button
+        class="dialog-button ${button.id}"
+        data-button="${button.id}"
+        style="margin-bottom:5px;"
+      >
+        ${button.label}
+      </button>
+    `;
+  }
+  return `<div class="dialog-buttons" style="margin-top: 5px;">${buttonFormat}</div>`;
+};
+
+const formatDialog = () => {
+  let dialogFormat = "";
+
+  for (const action of actions) {
+    if (typeof action === "function") {
+      dialogFormat += formatActionHeader(action());
+      dialogFormat += formatButtons([
+        createActionButton(action()),
+        createActionButton(action(true)),
+      ]);
+    } else {
+      dialogFormat += formatActionHeader(action);
+      dialogFormat += formatButtons([createActionButton(action)]);
+    }
+  }
+
+  dialogFormat += `<div style="margin-top: -5px"></div>`;
+
+  return dialogFormat;
+};
+
+const dialog = new Dialog(
+  {
+    title: " ",
+    content: formatDialog(),
+    buttons: {},
+  },
+  { width: 300 }
+);
+dialog.render(true);
+
+for (const button of dialogButtons) {
+  dialog.data.buttons[button.id] = {
+    callback: button.callback,
+  };
+}
