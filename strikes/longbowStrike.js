@@ -258,23 +258,35 @@ const weapon = {
       }
     }
 
+    let createChatMessage = (action) => {
+      if (action.name !== `${weapon.name} Strike`) {
+        ChatMessage.create({
+          user: game.user._id,
+          speaker: ChatMessage.getSpeaker(),
+          content: `
+            ${formatAction({
+              ...action,
+              content: structureActionContent(action),
+            })}
+          `,
+        });
+      }
+    };
+    createChatMessage = createChatMessage.bind(actor, action);
+    createChatMessage();
+
+    let callback;
+    if (effect) {
+      callback = async () => {};
+    } else {
+      callback = () => {};
+    }
+
     const actionButton = {
       id,
       label,
       disabled,
       callback: () => {
-        if (action.name !== `${weapon.name} Strike`) {
-          ChatMessage.create({
-            user: game.user._id,
-            speaker: ChatMessage.getSpeaker(),
-            content: `
-              ${formatAction({
-                ...action,
-                content: structureActionContent(action),
-              })}
-            `,
-          });
-        }
         if (strikeIndex !== undefined) {
           strike(strikeIndex);
         }
