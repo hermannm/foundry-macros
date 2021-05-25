@@ -487,9 +487,13 @@ const weapon = {
 
   for (const button of dialogButtons) {
     dialog.data.buttons[button.id] = {
-      callback: button.effect
-        ? () => executeWithEffect(button)
-        : button.callback,
+      callback: () => {
+        if (button.effect) {
+          executeWithEffect(button);
+        } else {
+          button.callback();
+        }
+      },
     };
   }
 })();
