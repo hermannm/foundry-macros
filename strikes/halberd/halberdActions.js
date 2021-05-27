@@ -157,6 +157,12 @@ const formatAction = ({ actions, name, tags, content }) => `
 
 const structureActionContent = (action) => {
   const content = [];
+  if (action.frequency) {
+    content.push({
+      title: "Frequency",
+      text: action.frequency,
+    });
+  }
   if (action.trigger) {
     content.push({
       title: "Trigger",
@@ -266,7 +272,7 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
   }
 
   let label =
-    strikeIndex !== undefined && action.strike && action.actions !== "Reactions"
+    strikeIndex !== undefined && action.strike && action.actions !== "Reaction"
       ? strikeIndexToLabel(strikeIndex)
       : action.name;
   if (strikeIndex !== undefined || modifier) {
@@ -319,6 +325,9 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
           strike(strikeIndex);
         }
       }
+      if (action.callback) {
+        action.callback();
+      }
     },
   };
 
@@ -332,12 +341,18 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
 const createActionButtons = ({ action, effect }) => {
   const actionButtons = [];
 
-  if (action.actions === "Reaction") {
-    actionButtons.push(createActionButton({ action, strikeIndex: 0, effect }));
-  } else {
-    for (let strikeIndex = 0; strikeIndex < 3; strikeIndex++) {
-      actionButtons.push(createActionButton({ action, strikeIndex, effect }));
+  if (action.strike) {
+    if (action.actions === "Reaction") {
+      actionButtons.push(
+        createActionButton({ action, strikeIndex: 0, effect })
+      );
+    } else {
+      for (let strikeIndex = 0; strikeIndex < 3; strikeIndex++) {
+        actionButtons.push(createActionButton({ action, strikeIndex, effect }));
+      }
     }
+  } else {
+    actionButtons.push(createActionButton({ action, effect }));
   }
 
   return actionButtons;
