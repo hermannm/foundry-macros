@@ -1,3 +1,22 @@
+const orcFerocity = () => {
+  if (actor.data.data.attributes.hp.value === 0) {
+    actor.update({ "data.attributes.hp.value": 1 });
+  }
+  if (
+    actor.data.data.attributes.hp.temp < actor.data.data.details.level.value
+  ) {
+    actor.update({
+      "data.attributes.hp.temp": actor.data.data.details.level.value,
+    });
+  }
+  if (actor.data.data.attributes.wounded.value < 4) {
+    actor.update({
+      "data.attributes.wounded.value":
+        actor.data.data.attributes.wounded.value + 1,
+    });
+  }
+};
+
 const weapon = {
   name: "Halberd",
   tags: ["Reach", "Versatile S"],
@@ -5,11 +24,21 @@ const weapon = {
     {
       name: "Attack of Opportunity",
       actions: "Reaction",
-      attack: true,
+      strike: true,
       trigger:
         "A creature within your reach uses a manipulate action or a move action, makes a ranged attack, or leaves a square during a move action it’s using.",
       description:
         "You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn’t count toward your multiple attack penalty, and your multiple attack penalty doesn’t apply to this Strike.",
+    },
+    {
+      name: "Orc Ferocity",
+      actions: "Reaction",
+      frequency: "once per day",
+      trigger:
+        "You would be reduced to 0 Hit Points but not immediately killed.",
+      description:
+        "Fierceness in battle runs through your blood, and you refuse to fall from your injuries. You avoid being knocked out and remain at 1 Hit Point, and your wounded condition increases by 1.",
+      callback: orcFerocity,
     },
   ],
 };
@@ -124,6 +153,12 @@ const formatAction = ({ actions, name, tags, content }) => `
 
 const structureActionContent = (action) => {
   const content = [];
+  if (action.frequency) {
+    content.push({
+      title: "Frequency",
+      text: action.frequency,
+    });
+  }
   if (action.trigger) {
     content.push({
       title: "Trigger",
@@ -233,7 +268,7 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
   }
 
   let label =
-    strikeIndex !== undefined && action.strike && action.actions !== "Reactions"
+    strikeIndex !== undefined && action.strike && action.actions !== "Reaction"
       ? strikeIndexToLabel(strikeIndex)
       : action.name;
   if (strikeIndex !== undefined || modifier) {
@@ -286,6 +321,9 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
           strike(strikeIndex);
         }
       }
+      if (action.callback) {
+        action.callback();
+      }
     },
   };
 
@@ -299,12 +337,18 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
 const createActionButtons = ({ action, effect }) => {
   const actionButtons = [];
 
-  if (action.actions === "Reaction") {
-    actionButtons.push(createActionButton({ action, strikeIndex: 0, effect }));
-  } else {
-    for (let strikeIndex = 0; strikeIndex < 3; strikeIndex++) {
-      actionButtons.push(createActionButton({ action, strikeIndex, effect }));
+  if (action.strike) {
+    if (action.actions === "Reaction") {
+      actionButtons.push(
+        createActionButton({ action, strikeIndex: 0, effect })
+      );
+    } else {
+      for (let strikeIndex = 0; strikeIndex < 3; strikeIndex++) {
+        actionButtons.push(createActionButton({ action, strikeIndex, effect }));
+      }
     }
+  } else {
+    actionButtons.push(createActionButton({ action, effect }));
   }
 
   return actionButtons;
