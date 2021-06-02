@@ -2,13 +2,13 @@ const orcFerocity = () => {
   if (actor.data.data.attributes.hp.value === 0) {
     actor.update({ "data.attributes.hp.value": 1 });
   }
-  if (
+  /* if (
     actor.data.data.attributes.hp.temp < actor.data.data.details.level.value
   ) {
     actor.update({
       "data.attributes.hp.temp": actor.data.data.details.level.value,
     });
-  }
+  } */
   if (actor.data.data.attributes.wounded.value < 4) {
     actor.update({
       "data.attributes.wounded.value":
