@@ -41,6 +41,9 @@ const slugify = (string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+const modToString = (modifier) =>
+  modifier >= 0 ? `+${modifier}` : `${modifier}`;
+
 const strike = (strikeIndex) => {
   const options = actor.getRollOptions([
     "all",
@@ -63,6 +66,47 @@ const executeWithEffect = async ({ effect, callback }) => {
   );
   callback();
   await actor.removeCustomModifier(effect.modifier.stat, effect.name);
+};
+
+const postChatMessage = ({ content }) => {
+  ChatMessage.create({
+    user: game.user._id,
+    speaker: ChatMessage.getSpeaker(),
+    content,
+  });
+};
+
+const postDamageMessage = ({ content, damageParts }) => {
+  let message = `${content}<hr />`;
+
+  const tags = [];
+  for (const damagePart of damageParts) {
+    if (damagePart.tag) {
+      tags.push(`${damagePart.tag} ${modToString(damagePart.value)}`);
+    }
+  }
+  if (tags.length !== 0) {
+    message += `
+      <div style="display: flex; flex-wrap: wrap;">
+        ${tags.map(
+          (tag) => `
+            <span class="damage-tag damage-tag-base">
+              ${tag}
+            </span>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  DicePF2e.damageRoll({
+    event,
+    parts: damageParts.map((damagePart) => damagePart.value.toString()),
+    actor,
+    data: actor.data.data,
+    title: message,
+    speaker: ChatMessage.getSpeaker(),
+  });
 };
 
 const formatActionHeader = ({ actions, name, tags }) => `
@@ -89,7 +133,8 @@ const formatActionHeader = ({ actions, name, tags }) => `
           ${tags
             .map(
               (tag) => `
-                <span class="tag tag_alt"">${tag}</span>`
+                <span class="tag tag_alt"">${tag}</span>
+              `
             )
             .join(" ")}
         </div>
@@ -154,10 +199,18 @@ const structureActionContent = (action) => {
       text: action.failure,
     });
   }
+  if (action.damage) {
+    if (action.damage.title) {
+      content.push({
+        title: action.damage.title,
+        text: action.damage.text ?? "",
+      });
+    }
+  }
   return content;
 };
 
-const damage = ({ crit, damageType }) => {
+const rollDamage = ({ crit, damageType }) => {
   const options = actor.getRollOptions([
     "all",
     "str-based",
@@ -177,37 +230,32 @@ const damage = ({ crit, damageType }) => {
       event,
       options,
       callback: (rollData) => {
+        console.log(rollData);
         if (weapon.criticalEffects) {
           for (const criticalEffect of weapon.criticalEffects) {
-            const criticalEffectAction = {
+            const actionFormat = formatAction({
               ...criticalEffect,
               actions: "Passive",
-            };
+            });
             if (criticalEffect.rollData) {
-              DicePF2e.damageRoll({
-                event,
-                parts: [
-                  `${
-                    criticalEffect.rollData.multiplier
-                      ? `${criticalEffect.rollData.multiplier}*`
-                      : ""
-                  }${
-                    rollData.diceResults[criticalEffect.rollData.selectors[0]][
-                      criticalEffect.rollData.selectors[1]
-                    ]
-                  }`,
+              postDamageMessage({
+                content: actionFormat,
+                damageParts: [
+                  {
+                    value: `${
+                      criticalEffect.rollData.multiplier
+                        ? `${criticalEffect.rollData.multiplier}*`
+                        : ""
+                    }${
+                      rollData.diceResults[
+                        criticalEffect.rollData.selectors[0]
+                      ][criticalEffect.rollData.selectors[1]]
+                    }`,
+                  },
                 ],
-                actor,
-                data: actor.data.data,
-                title: `${formatAction(criticalEffectAction)}<hr />`,
-                speaker: ChatMessage.getSpeaker(),
               });
             } else {
-              ChatMessage.create({
-                user: game.user._id,
-                speaker: ChatMessage.getSpeaker(),
-                content: formatAction(criticalEffectAction),
-              });
+              postChatMessage({ content: actionFormat });
             }
           }
         }
@@ -217,9 +265,6 @@ const damage = ({ crit, damageType }) => {
     getStrikeItem().damage({ event, options });
   }
 };
-
-const modToString = (modifier) =>
-  modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
 const strikeIndexToLabel = (strikeIndex) => {
   switch (strikeIndex) {
@@ -277,16 +322,18 @@ const createActionButton = ({ action, modifier, strikeIndex, effect }) => {
     disabled,
     callback: () => {
       if (action.name !== `${weapon.name} Strike`) {
-        ChatMessage.create({
-          user: game.user._id,
-          speaker: ChatMessage.getSpeaker(),
-          content: `
-            ${formatAction({
-              ...action,
-              content: structureActionContent(action),
-            })}
-          `,
+        const actionFormat = formatAction({
+          ...action,
+          content: structureActionContent(action),
         });
+        if (action.damage) {
+          postDamageMessage({
+            content: actionFormat,
+            damageParts: action.damage.parts,
+          });
+        } else {
+          postChatMessage({ content: actionFormat });
+        }
       }
       if (strikeIndex !== undefined) {
         if (effect) {
@@ -344,10 +391,10 @@ const createDamageButton = ({ crit, damageType, effect }) => {
       if (effect) {
         executeWithEffect({
           effect,
-          callback: () => damage({ crit, damageType }),
+          callback: () => rollDamage({ crit, damageType }),
         });
       } else {
-        damage({ crit, damageType });
+        rollDamage({ crit, damageType });
       }
     },
     effect,
