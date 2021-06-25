@@ -1,22 +1,3 @@
-const orcFerocity = () => {
-  if (actor.data.data.attributes.hp.value === 0) {
-    actor.update({ "data.attributes.hp.value": 1 });
-  }
-  if (
-    actor.data.data.attributes.hp.temp < actor.data.data.details.level.value
-  ) {
-    actor.update({
-      "data.attributes.hp.temp": actor.data.data.details.level.value,
-    });
-  }
-  if (actor.data.data.attributes.wounded.value < 4) {
-    actor.update({
-      "data.attributes.wounded.value":
-        actor.data.data.attributes.wounded.value + 1,
-    });
-  }
-};
-
 const weapon = {
   name: "Halberd",
   tags: ["Reach", "Versatile S"],
@@ -29,16 +10,6 @@ const weapon = {
         "A creature within your reach uses a manipulate action or a move action, makes a ranged attack, or leaves a square during a move action it’s using.",
       description:
         "You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn’t count toward your multiple attack penalty, and your multiple attack penalty doesn’t apply to this Strike.",
-    },
-    {
-      name: "Orc Ferocity",
-      actions: "Reaction",
-      frequency: "once per day",
-      trigger:
-        "You would be reduced to 0 Hit Points but not immediately killed.",
-      description:
-        "Fierceness in battle runs through your blood, and you refuse to fall from your injuries. You avoid being knocked out and remain at 1 Hit Point, and your wounded condition increases by 1.",
-      callback: orcFerocity,
     },
   ],
 };

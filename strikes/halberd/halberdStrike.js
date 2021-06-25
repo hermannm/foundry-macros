@@ -3,18 +3,6 @@ const weapon = {
   tags: ["Reach", "Versatile S"],
   strikeAction: true,
   damage: ["Piercing", "Slashing"],
-  criticalEffects: [
-    {
-      name: "Shock",
-      content: [
-        "On a critical hit, electricity arcs out to deal an equal amount of electricity damage to up to two other creatures of your choice within 10 feet of the target.",
-      ],
-      rollData: {
-        selectors: ["electricity", "energy"],
-        multiplier: 2,
-      },
-    },
-  ],
 };
 
 (async () => {
