@@ -126,7 +126,7 @@ const weapon = {
       `;
     }
 
-    await DicePF2e.damageRoll({
+    await game.pf2e.Dice.damageRoll({
       event,
       parts: damageParts.map((damagePart) => damagePart.value.toString()),
       actor,

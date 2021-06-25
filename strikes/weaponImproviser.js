@@ -75,7 +75,7 @@ const modToString = (modifier) =>
 const strike = ({ strikeIndex, melee }) => {
   const modifiers = melee ? meleeModifiers : rangedModifiers;
 
-  DicePF2e.d20Roll({
+  game.pf2e.Dice.d20Roll({
     event,
     parts: [modifiers[strikeIndex].total],
     data: actor.data,
@@ -161,7 +161,7 @@ const damage = ({ crit, dieSize, strength }) => {
     damageParts.formula = `2 * (${damageParts.formula})`;
   }
 
-  DicePF2e.damageRoll({
+  game.pf2e.Dice.damageRoll({
     event,
     parts: [damageParts.formula],
     actor,

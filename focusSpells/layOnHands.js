@@ -22,7 +22,7 @@
   } else if (focusPoints <= 0) {
     ui.notifications.warn("You have no focus points left.");
   } else {
-    await DicePF2e.damageRoll({
+    await game.pf2e.Dice.damageRoll({
       event: event,
       parts: new Array(Math.ceil(actor.data.data.details.level.value / 2)).fill(
         "6"

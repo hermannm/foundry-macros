@@ -19,7 +19,7 @@ const effect = {
   },
 };
 const criticalSpecialization = (rollData) => {
-  DicePF2e.damageRoll({
+  game.pf2e.Dice.damageRoll({
     event,
     parts: rollData.diceResults[weapon.damageType.toLowerCase()].physical,
     actor,

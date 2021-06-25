@@ -26,7 +26,7 @@ const action = {
     </header>
   `;
   const damage = (damage, area) => {
-    DicePF2e.damageRoll({
+    game.pf2e.Dice.damageRoll({
       event,
       parts: [`${damage}${action.damageType ? `[${action.damageType}]` : ""}`],
       actor,

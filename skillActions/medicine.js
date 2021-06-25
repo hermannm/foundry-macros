@@ -150,7 +150,7 @@ const chatMessage = (content) => {
 };
 
 const damageRoll = (content, damage) => {
-  DicePF2e.damageRoll({
+  game.pf2e.Dice.damageRoll({
     event,
     parts: [damage],
     actor,

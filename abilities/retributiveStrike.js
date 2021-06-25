@@ -6,8 +6,7 @@ const action = {
     "You protect your ally and strike your foe. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the foe is within reach, make a melee Strike against it.",
     {
       title: "Ranged Reprisal",
-      text:
-        "You can use Retributive Strike with a ranged weapon. In addition, if the foe that triggered your reaction is within 5 feet of your reach but not in your reach, as part of your reaction you can Step to put the foe in your reach before making a melee Retributive Strike.",
+      text: "You can use Retributive Strike with a ranged weapon. In addition, if the foe that triggered your reaction is within 5 feet of your reach but not in your reach, as part of your reaction you can Step to put the foe in your reach before making a melee Retributive Strike.",
     },
   ],
   tags: ["Champion"],
@@ -99,7 +98,7 @@ const action = {
     };
   };
   const damage = (damage, area) => {
-    DicePF2e.damageRoll({
+    game.pf2e.Dice.damageRoll({
       event,
       parts: [`${damage}${action.damageType ? `[${action.damageType}]` : ""}`],
       actor,
