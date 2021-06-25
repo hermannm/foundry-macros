@@ -32,7 +32,10 @@ const rollTreatWounds = async ({ DC, bonus, med, riskysurgery, godlessHealing, m
       let healFormula, successLabel;
       const magicHands = CheckFeat('magic-hands');
 
-      const bonusString = bonus > 0 ? `+ ${bonus}` : '';
+      const bonusString = `
+        ${bonus > 0 ? `+ ${bonus}` : ""}
+        ${godlessHealing === "combined" ? "+ 5" : ""}
+      `;
       if (roll.data.degreeOfSuccess === 3) {
         healFormula = magicHands ? `32${bonusString}` : `4d8${bonusString}`;
         successLabel = 'Critical Success';
@@ -61,7 +64,7 @@ const rollTreatWounds = async ({ DC, bonus, med, riskysurgery, godlessHealing, m
           },
           {},
         );
-        if (godlessHealing && (successLabel === "Success" || successLabel === "Critical Success")) {
+        if (godlessHealing === "separate" && (successLabel === "Success" || successLabel === "Critical Success")) {
           ChatMessage.create(
             {
               user: game.user.id,
@@ -89,7 +92,12 @@ async function applyChanges($html) {
     const mod = parseInt($html.find('[name="modifier"]').val()) || 0;
     const requestedProf = parseInt($html.find('[name="dc-type"]')[0].value) || 1;
     const riskysurgery = $html.find('[name="risky_surgery_bool"]')[0]?.checked;
-    const godlessHealing = $html.find('[name="godless_healing_bool"]')[0]?.checked;
+    const godlessHealing = $html.find('[name="godless_healing_bool"]')[0]?.checked
+      ? $html.find('[name="godless_healing_separate"]')[0]?.checked
+        ? "separate"
+        : "combined"
+      : undefined
+    ;
     const mortalhealing = $html.find('[name="mortal_healing_bool"]')[0]?.checked;
     const skill = $html.find('[name="skill"]')[0]?.value;
 
@@ -194,7 +202,19 @@ if (token === undefined) {
           <form>
             <div class="form-group">
               <label>Godless Healing</label>
-              <input type="checkbox" id="godless_healing_bool" name="godless_healing_bool" checked></input>
+              <div style="
+                display: flex;
+                justify-content: space-between;
+              ">
+                <input type="checkbox" id="godless_healing_bool" name="godless_healing_bool" checked></input>
+                <div style="
+                  display: flex;
+                  align-items: center;
+                ">
+                  <div>Separate roll?</div>
+                  <input type="checkbox" id="godless_healing_separate" name="godless_healing_separate"></input>
+                </div>
+              </div>
             </div>
           </form>`
         : ``
