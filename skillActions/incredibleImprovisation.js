@@ -73,6 +73,38 @@
     </div>
   `;
 
+  const createPerceptionButton = async ({ incredibleImprovisation }) => {
+    const perceptionButton = {
+      id: "perception",
+      label: `Perception ${modToString(
+        actor.data.data.attributes.perception.totalModifier
+      )}`,
+      disabled: incredibleImprovisation,
+      callback: async ($html) => {
+        const options = await actor.getRollOptions([
+          "all",
+          "wis-based",
+          "perception",
+        ]);
+        if ($html.find('[name="hermannm-secret-check"]')[0]?.checked) {
+          options.push("secret");
+        }
+        if ($html.find('[name="hermannm-initiative"]')[0]?.checked) {
+          await actor.update({
+            "data.attributes.initiative.ability": "perception",
+          });
+          actor.data.data.attributes.initiative.roll({ event, options });
+        } else {
+          actor.data.data.attributes.perception.roll({ event, options });
+        }
+      },
+    };
+
+    dialogButtons.push(perceptionButton);
+
+    return perceptionButton;
+  };
+
   const createSkillButton = async ({
     skillKey,
     skill,
@@ -87,7 +119,7 @@
           (skill.rank === 0 && incredibleImprovisation ? 4 : 0)
       )}`,
       disabled: skill.rank !== 0 && incredibleImprovisation,
-      callback: async () => {
+      callback: async ($html) => {
         if (incredibleImprovisation) {
           postChatMessage({
             content: formatAction({
@@ -120,7 +152,17 @@
           `${skill.ability}-based`,
           skill.name,
         ]);
-        actor.data.data.skills[skillKey].roll({ event, options });
+        if ($html.find('[name="hermannm-secret-check"]')[0]?.checked) {
+          options.push("secret");
+        }
+        if ($html.find('[name="hermannm-initiative"]')[0]?.checked) {
+          await actor.update({
+            "data.attributes.initiative.ability": skillKey,
+          });
+          actor.data.data.attributes.initiative.roll({ event, options });
+        } else {
+          actor.data.data.skills[skillKey].roll({ event, options });
+        }
         if (incredibleImprovisation) {
           await actor.removeCustomModifier(
             "skill-check",
@@ -143,28 +185,6 @@
       );
     }
     return skillButtons;
-  };
-
-  const createPerceptionButton = async ({ incredibleImprovisation }) => {
-    const perceptionButton = {
-      id: "perception",
-      label: `Perception ${modToString(
-        actor.data.data.attributes.perception.totalModifier
-      )}`,
-      disabled: incredibleImprovisation,
-      callback: async () => {
-        const options = await actor.getRollOptions([
-          "all",
-          "wis-based",
-          "perception",
-        ]);
-        actor.data.data.attributes.perception.roll({ event, options });
-      },
-    };
-
-    dialogButtons.push(perceptionButton);
-
-    return perceptionButton;
   };
 
   const formatButtons = (buttons) => {
@@ -215,22 +235,47 @@
     return buttonFormat;
   };
 
-  const formatDialog = async ({ incredibleImprovisation }) => {
-    let dialogFormat = "";
-
-    dialogFormat += `
-      <form>
+  const formatCheckbox = ({ id, label, checked }) => `
+    <form>
         <div class="form-group">
           <input
             type="checkbox"
-            id="hermannm-incredible-improvisation"
-            name="incredible-improvisation"
-            ${incredibleImprovisation ? "checked" : ""}
+            id="${id}"
+            name="${id}"
+            ${checked ? "checked" : ""}
           ></input>
-          <label>Incredible Improvisation</label>
+          <label>${label}</label>
         </div>
       </form>
-    `;
+  `;
+
+  const formatDialog = async ({
+    incredibleImprovisation,
+    secretCheck,
+    initiative,
+  }) => {
+    let dialogFormat = "";
+
+    console.log(secretCheck);
+    console.log(initiative);
+
+    dialogFormat += formatCheckbox({
+      id: "hermannm-secret-check",
+      label: "Secret Check",
+      checked: secretCheck,
+    });
+
+    dialogFormat += formatCheckbox({
+      id: "hermannm-initiative",
+      label: "Initiative",
+      checked: initiative,
+    });
+
+    dialogFormat += formatCheckbox({
+      id: "hermannm-incredible-improvisation",
+      label: "Incredible Improvisation",
+      checked: incredibleImprovisation,
+    });
 
     dialogFormat += formatButtons([
       await createPerceptionButton({ incredibleImprovisation }),
@@ -252,8 +297,16 @@
     { width: 400 }
   );
 
-  const setupDialog = async ({ incredibleImprovisation }) => {
-    dialog.data.content = await formatDialog({ incredibleImprovisation });
+  const setupDialog = async ({
+    incredibleImprovisation,
+    secretCheck,
+    initiative,
+  }) => {
+    dialog.data.content = await formatDialog({
+      incredibleImprovisation,
+      secretCheck,
+      initiative,
+    });
     dialog.data.buttons = {};
 
     dialog.render(true);
@@ -268,7 +321,17 @@
       document
         .getElementById("hermannm-incredible-improvisation")
         .addEventListener("change", (event) => {
-          setupDialog({ incredibleImprovisation: event.target.checked });
+          const { checked: secretCheckChecked } = document.getElementById(
+            "hermannm-secret-check"
+          );
+          const { checked: initiativeChecked } = document.getElementById(
+            "hermannm-initiative"
+          );
+          setupDialog({
+            incredibleImprovisation: event.target.checked,
+            secretCheck: secretCheckChecked,
+            initiative: initiativeChecked,
+          });
         });
     }, 0);
   };
