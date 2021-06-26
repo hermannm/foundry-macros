@@ -75,7 +75,7 @@
     </div>
   `;
 
-  const createSkillButton = (skillKey) => {
+  const createSkillButton = async (skillKey) => {
     const skillButton = {
       id: getSkill(skillKey),
       label: `${getSkill(skillKey).name.charAt(0).toUpperCase()}${getSkill(
@@ -135,8 +135,8 @@
 
   const createSkillButtons = async () => {
     const skillButtons = [];
-    for (const skillKey of Object.keys(actor.data.data.skills)) {
-      skillButtons.push(createSkillButton(skillKey));
+    for (let skillKey of Object.keys(actor.data.data.skills)) {
+      skillButtons.push(await createSkillButton(skillKey));
     }
     return skillButtons;
   };
@@ -187,25 +187,34 @@
       }
       buttonFormat += "</div>";
     }
-    return `<div id="skillButtons">${buttonFormat}</div>`;
+    return buttonFormat;
   };
 
-  const formatDialog = () => {
+  const formatDialog = async ({ incredibleImprovisation }) => {
     let dialogFormat = "";
 
     dialogFormat += `
       <form>
         <div class="form-group">
-          <input type="checkbox" id="incredible-improvisation" name="incredible-improvisation"></input>
+          <input
+            type="checkbox"
+            id="hermannm-incredible-improvisation"
+            name="incredible-improvisation"
+            ${incredibleImprovisation ? "checked" : ""}
+          ></input>
           <label>Incredible Improvisation</label>
         </div>
       </form>
     `;
 
-    dialogFormat += formatButtons({
-      buttons: createSkillButtons(),
-      incredibleImprovisation: false,
-    });
+    dialogFormat += `
+      <div id="hermannm-skill-buttons">
+      ${formatButtons({
+        buttons: await createSkillButtons(),
+        incredibleImprovisation,
+      })}
+      </div>
+    `;
 
     return dialogFormat;
   };
@@ -213,16 +222,32 @@
   const dialog = new Dialog(
     {
       title: "Skills",
-      content: formatDialog(),
+      content: "",
       buttons: {},
     },
     { width: 400 }
   );
-  dialog.render(true);
 
-  for (const button of dialogButtons) {
-    dialog.data.buttons[button.id] = {
-      callback: button.callback,
-    };
-  }
+  const setupDialog = async ({ incredibleImprovisation }) => {
+    dialog.data.content = await formatDialog({ incredibleImprovisation });
+    dialog.data.buttons = {};
+
+    dialog.render(true);
+
+    for (const button of dialogButtons) {
+      dialog.data.buttons[button.id] = {
+        callback: button.callback,
+      };
+    }
+
+    setTimeout(() => {
+      document
+        .getElementById("hermannm-incredible-improvisation")
+        .addEventListener("change", (event) => {
+          setupDialog({ incredibleImprovisation: event.target.checked });
+        });
+    }, 0);
+  };
+
+  setupDialog({ incredibleImprovisation: false });
 })();
