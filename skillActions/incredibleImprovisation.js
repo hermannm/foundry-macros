@@ -145,6 +145,28 @@
     return skillButtons;
   };
 
+  const createPerceptionButton = async ({ incredibleImprovisation }) => {
+    const perceptionButton = {
+      id: "perception",
+      label: `Perception ${modToString(
+        actor.data.data.attributes.perception.totalModifier
+      )}`,
+      disabled: incredibleImprovisation,
+      callback: async () => {
+        const options = await actor.getRollOptions([
+          "all",
+          "wis-based",
+          "perception",
+        ]);
+        actor.data.data.attributes.perception.roll({ event, options });
+      },
+    };
+
+    dialogButtons.push(perceptionButton);
+
+    return perceptionButton;
+  };
+
   const formatButtons = (buttons) => {
     let buttonFormat = "";
 
@@ -210,11 +232,13 @@
       </form>
     `;
 
-    dialogFormat += `
-      <div id="hermannm-skill-buttons">
-        ${formatButtons(await createSkillButtons({ incredibleImprovisation }))}
-      </div>
-    `;
+    dialogFormat += formatButtons([
+      await createPerceptionButton({ incredibleImprovisation }),
+    ]);
+
+    dialogFormat += formatButtons(
+      await createSkillButtons({ incredibleImprovisation })
+    );
 
     return dialogFormat;
   };
