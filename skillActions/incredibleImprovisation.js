@@ -1,8 +1,6 @@
 (async () => {
   const dialogButtons = [];
 
-  const getSkill = (skillKey) => actor.data.data.skills[skillKey];
-
   const modToString = (modifier) =>
     modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
@@ -75,17 +73,21 @@
     </div>
   `;
 
-  const createSkillButton = async (skillKey) => {
+  const createSkillButton = async ({
+    skillKey,
+    skill,
+    incredibleImprovisation,
+  }) => {
     const skillButton = {
-      id: getSkill(skillKey),
-      label: `${getSkill(skillKey).name.charAt(0).toUpperCase()}${getSkill(
-        skillKey
-      ).name.slice(1)} ${modToString(getSkill(skillKey).totalModifier)}`,
-      untrained: getSkill(skillKey).rank === 0,
-      callback: async ($html) => {
-        const incredibleImprovisation =
-          $html.find('[name="incredible-improvisation"]')[0]?.checked &&
-          getSkill(skillKey).rank === 0;
+      id: skillKey,
+      label: `${skill.name.charAt(0).toUpperCase()}${skill.name.slice(
+        1
+      )} ${modToString(
+        skill.totalModifier +
+          (skill.rank === 0 && incredibleImprovisation ? 4 : 0)
+      )}`,
+      disabled: skill.rank !== 0 && incredibleImprovisation,
+      callback: async () => {
         if (incredibleImprovisation) {
           postChatMessage({
             content: formatAction({
@@ -115,10 +117,10 @@
         const options = await actor.getRollOptions([
           "all",
           "skill-check",
-          `${getSkill(skillKey).ability}-based`,
-          getSkill(skillKey).name,
+          `${skill.ability}-based`,
+          skill.name,
         ]);
-        getSkill(skillKey).roll({ event, options });
+        actor.data.data.skills[skillKey].roll({ event, options });
         if (incredibleImprovisation) {
           await actor.removeCustomModifier(
             "skill-check",
@@ -133,15 +135,17 @@
     return skillButton;
   };
 
-  const createSkillButtons = async () => {
+  const createSkillButtons = async ({ incredibleImprovisation }) => {
     const skillButtons = [];
-    for (let skillKey of Object.keys(actor.data.data.skills)) {
-      skillButtons.push(await createSkillButton(skillKey));
+    for (let [skillKey, skill] of Object.entries(actor.data.data.skills)) {
+      skillButtons.push(
+        await createSkillButton({ skillKey, skill, incredibleImprovisation })
+      );
     }
     return skillButtons;
   };
 
-  const formatButtons = ({ buttons, incredibleImprovisation }) => {
+  const formatButtons = (buttons) => {
     let buttonFormat = "";
 
     const rows = Math.ceil(buttons.length / 3);
@@ -151,31 +155,30 @@
       for (let column = 0; column < 3; column++) {
         if (row * 3 + column < buttons.length) {
           const button = buttons[row * 3 + column];
-          buttonFormat +=
-            !button.untrained && incredibleImprovisation
-              ? `
-                <div style="
-                  margin-bottom: 5px;
-                  ${column === 2 ? "" : "margin-right: 5px;"}
-                  padding: 1px 6px;
-                  border: 2px groove #f0f0e0;
-                  border-radius: 3px;
-                  text-align: center;
-                  font-family: Signika, sans-serif;
-                  font-size: 14px;
-                  color: #4b4a44;
-                  line-height: 28px;
-                ">
-                  ${button.label}
-                </div>
-              `
-              : `
-                <button
-                  class="dialog-button ${button.id}"
-                  data-button="${button.id}"
-                  style="margin-bottom: 5px;"
-                >${button.label}</button>
-              `;
+          buttonFormat += button.disabled
+            ? `
+              <div style="
+                margin-bottom: 5px;
+                ${column === 2 ? "" : "margin-right: 5px;"}
+                padding: 1px 6px;
+                border: 2px groove #f0f0e0;
+                border-radius: 3px;
+                text-align: center;
+                font-family: Signika, sans-serif;
+                font-size: 14px;
+                color: #4b4a44;
+                line-height: 28px;
+              ">
+                ${button.label}
+              </div>
+            `
+            : `
+              <button
+                class="dialog-button ${button.id}"
+                data-button="${button.id}"
+                style="margin-bottom: 5px;"
+              >${button.label}</button>
+            `;
         } else {
           buttonFormat += `
             <button
@@ -209,10 +212,7 @@
 
     dialogFormat += `
       <div id="hermannm-skill-buttons">
-      ${formatButtons({
-        buttons: await createSkillButtons(),
-        incredibleImprovisation,
-      })}
+        ${formatButtons(await createSkillButtons({ incredibleImprovisation }))}
       </div>
     `;
 
