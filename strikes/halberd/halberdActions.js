@@ -68,7 +68,7 @@ const weapon = {
   const getStrikeItem = () =>
     (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
-      .find((strike) => strike.name === weapon.name);
+      .find((strike) => strike.name.includes(weapon.name));
 
   const modifiers = getStrikeItem().variants.map((variant) => {
     let modifier = getStrikeItem().totalModifier;
