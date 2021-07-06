@@ -73,36 +73,45 @@
     </div>
   `;
 
-  const createPerceptionButton = async ({ incredibleImprovisation }) => {
-    const perceptionButton = {
-      id: "perception",
-      label: `Perception ${modToString(
-        actor.data.data.attributes.perception.totalModifier
-      )}`,
+  const createAttributeButton = async ({
+    category,
+    attributeName,
+    incredibleImprovisation,
+  }) => {
+    const attribute = actor.data.data[category][attributeName];
+
+    const attributeButton = {
+      id: attributeName,
+      label: `${attributeName.charAt(0).toUpperCase()}${attributeName.slice(
+        1
+      )} ${modToString(attribute.totalModifier)}`,
       disabled: incredibleImprovisation,
       callback: async ($html) => {
         const options = await actor.getRollOptions([
           "all",
-          "wis-based",
-          "perception",
+          `${attribute.ability}-based`,
+          attributeName,
         ]);
         if ($html.find('[name="hermannm-secret-check"]')[0]?.checked) {
           options.push("secret");
         }
-        if ($html.find('[name="hermannm-initiative"]')[0]?.checked) {
+        if (
+          $html.find('[name="hermannm-initiative"]')[0]?.checked &&
+          attributeName === "perception"
+        ) {
           await actor.update({
-            "data.attributes.initiative.ability": "perception",
+            "data.attributes.initiative.ability": attributeName,
           });
           actor.data.data.attributes.initiative.roll({ event, options });
         } else {
-          actor.data.data.attributes.perception.roll({ event, options });
+          actor.data.data[category][attributeName].roll({ event, options });
         }
       },
     };
 
-    dialogButtons.push(perceptionButton);
+    dialogButtons.push(attributeButton);
 
-    return perceptionButton;
+    return attributeButton;
   };
 
   const createSkillButton = async ({
@@ -256,9 +265,6 @@
   }) => {
     let dialogFormat = "";
 
-    console.log(secretCheck);
-    console.log(initiative);
-
     dialogFormat += formatCheckbox({
       id: "hermannm-secret-check",
       label: "Secret Check",
@@ -278,7 +284,29 @@
     });
 
     dialogFormat += formatButtons([
-      await createPerceptionButton({ incredibleImprovisation }),
+      await createAttributeButton({
+        category: "attributes",
+        attributeName: "perception",
+        incredibleImprovisation,
+      }),
+    ]);
+
+    dialogFormat += formatButtons([
+      await createAttributeButton({
+        category: "saves",
+        attributeName: "fortitude",
+        incredibleImprovisation,
+      }),
+      await createAttributeButton({
+        category: "saves",
+        attributeName: "reflex",
+        incredibleImprovisation,
+      }),
+      await createAttributeButton({
+        category: "saves",
+        attributeName: "will",
+        incredibleImprovisation,
+      }),
     ]);
 
     dialogFormat += formatButtons(
