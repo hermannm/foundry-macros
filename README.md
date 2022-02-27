@@ -1,3 +1,3 @@
 # foundry-macros
 
-JavaScript macros for Foundry VTT.
+JavaScript macros for [Foundry VTT](https://foundryvtt.com/).
