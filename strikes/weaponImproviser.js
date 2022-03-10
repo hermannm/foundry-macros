@@ -7,7 +7,7 @@ const weapon = {
   actions: [
     {
       name: "Improvised Pummel",
-      actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+      actions: "OneAction",
       strike: true,
       tags: ["Archetype"],
       requirements: "You are wielding an improvised weapon.",
