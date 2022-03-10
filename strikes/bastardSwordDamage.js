@@ -1,4 +1,5 @@
 const weapon = "Bastard Sword";
+
 const effectToConsume = {
   name: "Weapon Surge",
   modifier: {
@@ -9,6 +10,7 @@ const effectToConsume = {
   },
   iconPath: "systems/pf2e/icons/spells/weapon-surge.webp",
 };
+
 (async () => {
   if (!event.shiftKey) {
     if (!event.altKey) {
@@ -35,6 +37,7 @@ const effectToConsume = {
         ?.critical(event);
     }
   }
+
   if (
     (actor.data.data.customModifiers[effectToConsume.modifier.stat] || []).some(
       (customModifier) => customModifier.name === effectToConsume.name
@@ -43,13 +46,7 @@ const effectToConsume = {
     if (token.data.effects.includes(effectToConsume.iconPath)) {
       await token.toggleEffect(effectToConsume.iconPath);
     }
-    await actor.removeCustomModifier(
-      effectToConsume.modifier.stat,
-      effectToConsume.name
-    );
-    await actor.removeDamageDice(
-      effectToConsume.damageDice.selector,
-      effectToConsume.name
-    );
+    await actor.removeCustomModifier(effectToConsume.modifier.stat, effectToConsume.name);
+    await actor.removeDamageDice(effectToConsume.damageDice.selector, effectToConsume.name);
   }
 })();

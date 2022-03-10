@@ -11,12 +11,14 @@ const effect = {
   },
   iconPath: "systems/pf2e/icons/spells/weapon-surge.webp",
 };
+
 const {
   _id: focusID,
   data: {
     focus: { points: focusPoints, pool: focusPool },
   },
 } = actor.data.items.find((item) => item.name === "Focus Spells");
+
 (async () => {
   if (event.shiftKey) {
     if (focusPoints < focusPool) {
@@ -25,6 +27,7 @@ const {
         speaker: ChatMessage.getSpeaker(),
         content: actor.name + " refocuses, restoring 1 Focus Point.",
       });
+
       await actor.updateEmbeddedEntity("OwnedItem", {
         _id: focusID,
         data: { focus: { points: focusPoints + 1, pool: focusPool } },
@@ -40,6 +43,7 @@ const {
     if (token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.removeCustomModifier(effect.modifier.stat, effect.name);
     await actor.removeDamageDice(damageDice.selector, damageDice.name);
   } else if (focusPoints <= 0) {
@@ -50,19 +54,24 @@ const {
         .filter((item) => item.data.type === "action")
         .find((item) => item.data.name === effect.name)?._id ??
       actor.items.find((item) => item.data.name === effect.name)?._id;
+
     if (itemID) {
       game.pf2e.rollItemMacro(itemID);
     }
+
     if (!token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.addCustomModifier(
       effect.modifier.stat,
       effect.name,
       effect.modifier.value,
       effect.modifier.type
     );
+
     await actor.addDamageDice({ ...effect.damageDice, name: effect.name });
+
     await actor.updateEmbeddedEntity("OwnedItem", {
       _id: focusID,
       data: { focus: { points: focusPoints - 1, pool: focusPool } },

@@ -7,6 +7,7 @@ const effect = {
   },
   iconPath: "systems/pf2e/icons/features/classes/precision.webp",
 };
+
 (async () => {
   if (
     (actor.data.data.customModifiers[effect.modifier.stat] || []).some(
@@ -16,6 +17,7 @@ const effect = {
     if (token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.removeCustomModifier(effect.modifier.stat, effect.name);
   } else {
     const itemID =
@@ -23,12 +25,15 @@ const effect = {
         .filter((item) => item.data.type === "action")
         .find((item) => item.data.name === effect.name)?._id ??
       actor.items.find((item) => item.data.name === effect.name)?._id;
+
     if (itemID) {
       game.pf2e.rollItemMacro(itemID);
     }
+
     if (!token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.addCustomModifier(
       effect.modifier.stat,
       effect.name,

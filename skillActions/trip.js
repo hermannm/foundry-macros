@@ -2,20 +2,20 @@ const action = {
   name: "Trip",
   skill: "Athletics",
   targetDC: "Reflex",
-  actions: "OneAction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+  actions: "OneAction",
   requirements:
-    "You have at least one hand free. Your target can’t be more than one size larger than you.",
+    "You have at least one hand free. Your target can't be more than one size larger than you.",
   description:
-    "You try to knock an opponent to the ground. Attempt an Athletics check against the target’s Reflex DC.",
+    "You try to knock an opponent to the ground. Attempt an Athletics check against the target's Reflex DC.",
   degreesOfSuccess: {
-    criticalSuccess:
-      "The target falls and lands prone and takes 1d6 bludgeoning damage.",
+    criticalSuccess: "The target falls and lands prone and takes 1d6 bludgeoning damage.",
     success: "The target falls and lands prone.",
     criticalFailure: "You lose your balance and fall and land prone.",
-  }, // criticalSuccess, success, failure, criticalFailure - leave step absent for no effect
-  maxSize: 1, // maximum steps up in size that the target can be
-  attack: true, // absent (false), true, or "agile"
+  },
+  maxSize: 1,
+  attack: true,
 };
+
 (async () => {
   const skill = () =>
     actor.data.data.skills[
@@ -23,6 +23,7 @@ const action = {
         (entry) => entry[1].name === action.skill.toLowerCase()
       )[0]
     ];
+
   const skillFormat = `
     <header style="display: flex;">
       <img
@@ -37,49 +38,41 @@ const action = {
       >${action.name}</h3>
     </header>
   `;
+
   const skillRoll = () => {
     const options = [
-      ...actor.getRollOptions([
-        "all",
-        "skill-check",
-        action.skill.toLowerCase(),
-      ]),
+      ...actor.getRollOptions(["all", "skill-check", action.skill.toLowerCase()]),
       action.name.toLowerCase(),
     ];
+
     if (action.attack) {
       options.push("attack");
     }
+
     skill().roll(event, options, (roll) => {
       let resultMessage = `<hr style="margin-top: 0;" />${skillFormat}`;
       let validTarget = false;
+
       const sizeArray = Object.keys(CONFIG.PF2E.actorSizes);
-      const characterSizeIndex = sizeArray.indexOf(
-        actor.data?.data?.traits?.size?.value
-      );
+      const characterSizeIndex = sizeArray.indexOf(actor.data?.data?.traits?.size?.value);
+
       for (const target of game.user.targets) {
-        const dc =
-          target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]
-            ?.value + 10;
+        const dc = target.actor?.data?.data?.saves?.[action.targetDC.toLowerCase()]?.value + 10;
+
         if (dc) {
           validTarget = true;
           resultMessage += `<hr /><b>${target.name}:</b>`;
+
           if (
             action.maxSize
               ? action.maxSize >=
-                sizeArray.indexOf(
-                  target.actor?.data?.data?.traits?.size?.value
-                ) -
+                sizeArray.indexOf(target.actor?.data?.data?.traits?.size?.value) -
                   characterSizeIndex
               : true
           ) {
             let successStep =
-              roll.total >= dc
-                ? roll.total >= dc + 10
-                  ? 3
-                  : 2
-                : roll.total > dc - 10
-                ? 1
-                : 0;
+              roll.total >= dc ? (roll.total >= dc + 10 ? 3 : 2) : roll.total > dc - 10 ? 1 : 0;
+
             switch (roll.terms[0].results[0].result) {
               case 20:
                 successStep++;
@@ -88,6 +81,7 @@ const action = {
                 successStep--;
                 break;
             }
+
             if (successStep >= 3) {
               resultMessage += "<br />💥 <b>Critical Success</b>";
               if (action.degreesOfSuccess?.criticalSuccess) {
@@ -123,40 +117,38 @@ const action = {
       }
     });
   };
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+
+  const modToString = (modifier) => (modifier >= 0 ? `+${modifier}` : `${modifier}`);
+
   const dialogContent = `
     ${skillFormat}
     <hr />
-    ${
-      action.requirements
-        ? `<b>Requirements</b> ${action.requirements}<hr>`
-        : ""
-    }
+    ${action.requirements ? `<b>Requirements</b> ${action.requirements}<hr>` : ""}
     ${action.description ? `${action.description}<hr>` : ""}
   `;
+
   if (action.attack) {
     const weapon = actor.data.items
       .filter(
         (item) =>
           item.type === "weapon" &&
           item.data.equipped?.value === true &&
-          item.data.traits.value?.some(
-            (trait) => trait === action.name.toLowerCase()
-          )
+          item.data.traits.value?.some((trait) => trait === action.name.toLowerCase())
       )
       .reduce(
         (item1, item2) =>
-          (item1?.data.potencyRune?.value ?? 0) >
-          (item2?.data.potencyRune?.value ?? 0)
+          (item1?.data.potencyRune?.value ?? 0) > (item2?.data.potencyRune?.value ?? 0)
             ? item1
             : item2,
         null
       );
+
     const potency = parseInt(weapon?.data.potencyRune?.value ?? 0);
+
     const agile =
       action.attack === "agile" ||
       (weapon?.data.traits.value?.some((trait) => trait === "agile") ?? false);
+
     const getPenalty = (MAP) => {
       let penalty = 0;
       if (MAP === 2) {
@@ -166,14 +158,10 @@ const action = {
       }
       return penalty;
     };
+
     const attackRoll = async (penalty) => {
       if (potency) {
-        await actor.addCustomModifier(
-          action.skill.toLowerCase(),
-          "Item Bonus",
-          potency,
-          "item"
-        );
+        await actor.addCustomModifier(action.skill.toLowerCase(), "Item Bonus", potency, "item");
       }
       if (penalty) {
         await actor.addCustomModifier(
@@ -183,20 +171,17 @@ const action = {
           "untyped"
         );
       }
+
       skillRoll();
+
       if (potency) {
-        await actor.removeCustomModifier(
-          action.skill.toLowerCase(),
-          "Item Bonus"
-        );
+        await actor.removeCustomModifier(action.skill.toLowerCase(), "Item Bonus");
       }
       if (penalty) {
-        await actor.removeCustomModifier(
-          action.skill.toLowerCase(),
-          "Multiple Attack Penalty"
-        );
+        await actor.removeCustomModifier(action.skill.toLowerCase(), "Multiple Attack Penalty");
       }
     };
+
     new Dialog({
       title: " ",
       content: dialogContent,
@@ -208,17 +193,13 @@ const action = {
           },
         },
         second: {
-          label: `2nd attack (${modToString(
-            skill().totalModifier + potency + getPenalty(2)
-          )})`,
+          label: `2nd attack (${modToString(skill().totalModifier + potency + getPenalty(2))})`,
           callback: () => {
             attackRoll(getPenalty(2));
           },
         },
         third: {
-          label: `3rd attack (${modToString(
-            skill().totalModifier + potency + getPenalty(3)
-          )})`,
+          label: `3rd attack (${modToString(skill().totalModifier + potency + getPenalty(3))})`,
           callback: () => {
             attackRoll(getPenalty(3));
           },

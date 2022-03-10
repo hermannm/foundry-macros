@@ -1,6 +1,6 @@
 const action = {
   name: "Dragon's Rage Breath",
-  actions: "TwoActions", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+  actions: "TwoActions",
   save: "Basic Reflex",
   DC: "Class DC",
   damageType: "Cold",
@@ -8,6 +8,7 @@ const action = {
     "You breathe deeply and exhale powerful energy in a 30-foot cone or 60-foot line, dealing 1d6 damage per level. The area and damage type match those of your dragon (see Table 3–4 on page 86). If you used this ability in the last hour, the area and the damage are halved (15-foot cone or 30-foot line; 1d6 damage for every 2 levels). Each creature in the area must attempt a basic Reflex save.",
   tags: ["Arcane", "Barbarian", "Concentrate", "Evocation", "Instinct", "Rage"],
 };
+
 (async () => {
   const actionHeader = `
     <header style="display: flex; font-size: 14px;">
@@ -25,6 +26,7 @@ const action = {
       </h3>
     </header>
   `;
+
   const damage = (damage, area) => {
     game.pf2e.Dice.damageRoll({
       event,
@@ -90,6 +92,7 @@ const action = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
+
   const dialog = new Dialog({
     title: " ",
     content: `
@@ -102,10 +105,7 @@ const action = {
       standard: {
         label: "Standard",
         callback: () => {
-          damage(
-            `${actor.data.data.details?.level?.value ?? 0}d6`,
-            "30-foot cone"
-          );
+          damage(`${actor.data.data.details?.level?.value ?? 0}d6`, "30-foot cone");
         },
       },
       hour: {
@@ -120,5 +120,6 @@ const action = {
     },
     default: "standard",
   });
+
   dialog.render(true);
 })();

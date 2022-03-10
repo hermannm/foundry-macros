@@ -1,6 +1,6 @@
 const action = {
   name: "Retributive Strike",
-  actions: "Reaction", // OneAction/TwoActions/ThreeActions/FreeAction/Reaction/Passive
+  actions: "Reaction",
   trigger: "An enemy damages your ally, and both are within 15 feet of you.",
   description: [
     "You protect your ally and strike your foe. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the foe is within reach, make a melee Strike against it.",
@@ -11,6 +11,7 @@ const action = {
   ],
   tags: ["Champion"],
 };
+
 (async () => {
   const actionHeader = ({ actions, name, tags }) => `
     <hr style="margin-top: 0; margin-bottom: 3px;" />
@@ -44,11 +45,13 @@ const action = {
         : `<hr style="margin-top: 3px;" />`
     }
   `;
+
   const actionBody = ({ content }) => {
     const checkTitle = (paragraph) =>
       typeof paragraph === "object"
         ? `<strong>${paragraph.title}</strong> ${paragraph.text}`
         : paragraph;
+
     return `
       <div style="font-weight: 500;">
         ${content
@@ -63,33 +66,41 @@ const action = {
       </div>
     `;
   };
-  const actionFormat = ({ actions, name, tags, content }) =>
-    `<div style="font-size: 14px; line-height: 16.8px; color: #191813;">
+
+  const actionFormat = ({ actions, name, tags, content }) => `
+    <div style="font-size: 14px; line-height: 16.8px; color: #191813;">
       ${actionHeader({ actions, name, tags })}${actionBody({ content })}
-    </div>`;
+    </div>
+  `;
+
   const contentFormat = (action) => {
     const content = [];
+
     if (action.trigger) {
       content.push({
         title: "Trigger",
         text: action.trigger,
       });
     }
+
     if (action.requirements) {
       content.push({
         title: "Requirements",
         text: action.requirements,
       });
     }
+
     if (action.description) {
       content.push(action.description);
     }
+
     if (action.failure) {
       content.push({
         title: "Failure",
         text: action.failure,
       });
     }
+
     return {
       actions: action.actions,
       name: action.name,
@@ -97,7 +108,8 @@ const action = {
       content: content,
     };
   };
-  const damage = (damage, area) => {
+
+  const rollDamage = (damage) => {
     game.pf2e.Dice.damageRoll({
       event,
       parts: [`${damage}${action.damageType ? `[${action.damageType}]` : ""}`],
@@ -107,5 +119,6 @@ const action = {
       speaker: ChatMessage.getSpeaker(),
     });
   };
-  damage(`2+${actor.data.data.details?.level?.value}`);
+
+  rollDamage(`2+${actor.data.data.details?.level?.value}`);
 })();

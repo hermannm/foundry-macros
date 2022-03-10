@@ -1,20 +1,23 @@
 const weapon = "Retribution Axe";
+
 const effect = {
   name: "Sweep",
   description:
     "When you attack with this weapon, you gain a +1 circumstance bonus to your attack roll if you already attempted to attack a different target this turn using this weapon.",
-  icon: "users-slash", // icon for the effect dialog, fetch string from here: https://fontawesome.com/icons?d=gallery&m=free
+  icon: "users-slash",
   modifier: {
     stat: "attack",
     value: 1,
     type: "circumstance",
   },
 };
+
 (async () => {
   const strikeItem = () =>
     (actor.data.data.actions ?? [])
       .filter((action) => action.type === "strike")
       .find((strike) => strike.name === weapon);
+
   const strike = (MAP) => {
     switch (MAP) {
       case 1:
@@ -28,6 +31,7 @@ const effect = {
         break;
     }
   };
+
   const strikeWithEffect = async (MAP) => {
     await actor.addCustomModifier(
       effect.modifier.stat,
@@ -35,19 +39,25 @@ const effect = {
       effect.modifier.value,
       effect.modifier.type
     );
+
     strike(MAP);
+
     await actor.removeCustomModifier(effect.modifier.stat, effect.name);
   };
+
   const modifiers = strikeItem().variants.map((variant) => {
     let modifier = strikeItem().totalModifier;
+
     const splitLabel = variant.label.split(" ");
     if (splitLabel[0] === "MAP") {
       modifier += parseInt(splitLabel[1]);
     }
+
     return modifier;
   });
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+
+  const modToString = (modifier) => (modifier >= 0 ? `+${modifier}` : `${modifier}`);
+
   const dialog = new Dialog({
     title: `${weapon} Strike`,
     content: `
@@ -108,6 +118,7 @@ const effect = {
     },
   });
   dialog.render(true);
+
   dialog.data.buttons.first = {
     callback: () => {
       strike(1);

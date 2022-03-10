@@ -1,8 +1,7 @@
 (async () => {
   const dialogButtons = [];
 
-  const modToString = (modifier) =>
-    modifier >= 0 ? `+${modifier}` : `${modifier}`;
+  const modToString = (modifier) => (modifier >= 0 ? `+${modifier}` : `${modifier}`);
 
   const postChatMessage = ({ content }) => {
     ChatMessage.create({
@@ -73,18 +72,14 @@
     </div>
   `;
 
-  const createAttributeButton = async ({
-    category,
-    attributeName,
-    incredibleImprovisation,
-  }) => {
+  const createAttributeButton = async ({ category, attributeName, incredibleImprovisation }) => {
     const attribute = actor.data.data[category][attributeName];
 
     const attributeButton = {
       id: attributeName,
-      label: `${attributeName.charAt(0).toUpperCase()}${attributeName.slice(
-        1
-      )} ${modToString(attribute.totalModifier)}`,
+      label: `${attributeName.charAt(0).toUpperCase()}${attributeName.slice(1)} ${modToString(
+        attribute.totalModifier
+      )}`,
       disabled: incredibleImprovisation,
       callback: async ($html) => {
         const options = await actor.getRollOptions([
@@ -92,9 +87,11 @@
           `${attribute.ability}-based`,
           attributeName,
         ]);
+
         if ($html.find('[name="hermannm-secret-check"]')[0]?.checked) {
           options.push("secret");
         }
+
         if (
           $html.find('[name="hermannm-initiative"]')[0]?.checked &&
           attributeName === "perception"
@@ -114,18 +111,11 @@
     return attributeButton;
   };
 
-  const createSkillButton = async ({
-    skillKey,
-    skill,
-    incredibleImprovisation,
-  }) => {
+  const createSkillButton = async ({ skillKey, skill, incredibleImprovisation }) => {
     const skillButton = {
       id: skillKey,
-      label: `${skill.name.charAt(0).toUpperCase()}${skill.name.slice(
-        1
-      )} ${modToString(
-        skill.totalModifier +
-          (skill.rank === 0 && incredibleImprovisation ? 4 : 0)
+      label: `${skill.name.charAt(0).toUpperCase()}${skill.name.slice(1)} ${modToString(
+        skill.totalModifier + (skill.rank === 0 && incredibleImprovisation ? 4 : 0)
       )}`,
       disabled: skill.rank !== 0 && incredibleImprovisation,
       callback: async ($html) => {
@@ -142,12 +132,13 @@
                 },
                 {
                   title: "Trigger",
-                  text: "You attempt a check using a skill you’re untrained in.",
+                  text: "You attempt a check using a skill you're untrained in.",
                 },
                 "A stroke of brilliance gives you a major advantage with a skill despite your inexperience. Gain a +4 circumstance bonus to the triggering skill check.",
               ],
             }),
           });
+
           await actor.addCustomModifier(
             "skill-check",
             "Incredible Improvisation",
@@ -155,15 +146,18 @@
             "circumstance"
           );
         }
+
         const options = await actor.getRollOptions([
           "all",
           "skill-check",
           `${skill.ability}-based`,
           skill.name,
         ]);
+
         if ($html.find('[name="hermannm-secret-check"]')[0]?.checked) {
           options.push("secret");
         }
+
         if ($html.find('[name="hermannm-initiative"]')[0]?.checked) {
           await actor.update({
             "data.attributes.initiative.ability": skillKey,
@@ -172,11 +166,9 @@
         } else {
           actor.data.data.skills[skillKey].roll({ event, options });
         }
+
         if (incredibleImprovisation) {
-          await actor.removeCustomModifier(
-            "skill-check",
-            "Incredible Improvisation"
-          );
+          await actor.removeCustomModifier("skill-check", "Incredible Improvisation");
         }
       },
     };
@@ -188,11 +180,11 @@
 
   const createSkillButtons = async ({ incredibleImprovisation }) => {
     const skillButtons = [];
+
     for (let [skillKey, skill] of Object.entries(actor.data.data.skills)) {
-      skillButtons.push(
-        await createSkillButton({ skillKey, skill, incredibleImprovisation })
-      );
+      skillButtons.push(await createSkillButton({ skillKey, skill, incredibleImprovisation }));
     }
+
     return skillButtons;
   };
 
@@ -203,9 +195,11 @@
 
     for (let row = 0; row < rows; row++) {
       buttonFormat += `<div class="dialog-buttons" style="margin-top: 5px;">`;
+
       for (let column = 0; column < 3; column++) {
         if (row * 3 + column < buttons.length) {
           const button = buttons[row * 3 + column];
+
           buttonFormat += button.disabled
             ? `
               <div style="
@@ -239,8 +233,10 @@
           `;
         }
       }
+
       buttonFormat += "</div>";
     }
+
     return buttonFormat;
   };
 
@@ -258,11 +254,7 @@
       </form>
   `;
 
-  const formatDialog = async ({
-    incredibleImprovisation,
-    secretCheck,
-    initiative,
-  }) => {
+  const formatDialog = async ({ incredibleImprovisation, secretCheck, initiative }) => {
     let dialogFormat = "";
 
     dialogFormat += formatCheckbox({
@@ -309,9 +301,7 @@
       }),
     ]);
 
-    dialogFormat += formatButtons(
-      await createSkillButtons({ incredibleImprovisation })
-    );
+    dialogFormat += formatButtons(await createSkillButtons({ incredibleImprovisation }));
 
     return dialogFormat;
   };
@@ -325,11 +315,7 @@
     { width: 400 }
   );
 
-  const setupDialog = async ({
-    incredibleImprovisation,
-    secretCheck,
-    initiative,
-  }) => {
+  const setupDialog = async ({ incredibleImprovisation, secretCheck, initiative }) => {
     dialog.data.content = await formatDialog({
       incredibleImprovisation,
       secretCheck,
@@ -349,12 +335,9 @@
       document
         .getElementById("hermannm-incredible-improvisation")
         .addEventListener("change", (event) => {
-          const { checked: secretCheckChecked } = document.getElementById(
-            "hermannm-secret-check"
-          );
-          const { checked: initiativeChecked } = document.getElementById(
-            "hermannm-initiative"
-          );
+          const { checked: secretCheckChecked } = document.getElementById("hermannm-secret-check");
+          const { checked: initiativeChecked } = document.getElementById("hermannm-initiative");
+
           setupDialog({
             incredibleImprovisation: event.target.checked,
             secretCheck: secretCheckChecked,

@@ -7,6 +7,7 @@ const effect = {
   },
   iconPath: "systems/pf2e/icons/spells/lay-on-hands.webp",
 };
+
 (async () => {
   if (
     (actor.data.data.customModifiers[effect.modifier.stat] || []).some(
@@ -16,11 +17,13 @@ const effect = {
     if (token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.removeCustomModifier(effect.modifier.stat, effect.name);
   } else {
     if (!token.data.effects.includes(effect.iconPath)) {
       await token.toggleEffect(effect.iconPath);
     }
+
     await actor.addCustomModifier(
       effect.modifier.stat,
       effect.name,
